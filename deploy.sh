@@ -345,6 +345,7 @@ configure_nginx() {
   cat > /etc/nginx/sites-available/echofy-app <<EOF
 server {
     listen 80;
+    listen [::]:80;
     server_name $DOMAIN www.$DOMAIN;
 
     root $APP_DIR/react;
