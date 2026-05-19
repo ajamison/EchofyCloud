@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Echofy.Api/Echofy.Api.csproj" />
+    <Project Path="src/Echofy.Nfc.App/Echofy.Nfc.App.csproj" />
+    <Project Path="src/Echofy.Application/Echofy.Application.csproj" />
+    <Project Path="src/Echofy.Domain/Echofy.Domain.csproj" />
+    <Project Path="src/Echofy.Infrastructure/Echofy.Infrastructure.csproj" />
+    <Project Path="src/Echofy.MobileApp/Echofy.MobileApp.csproj" />
+    <Project Path="src/Echofy.RecommendationApi/Echofy.RecommendationApi.csproj" />
+    <Project Path="src/Echofy.Web/Echofy.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Echofy.Application.Tests/Echofy.Application.Tests.csproj" />
+    <Project Path="tests/Echofy.Domain.Tests/Echofy.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,55 @@
+@model Echofy.Application.DTOs.LeadDto
+@using Echofy.Domain.Enums
+@{
+    ViewData["Title"] = "Add Lead";
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-phoenix-secondary btn-sm"><span class="fas fa-arrow-left me-2"></span>Back</a>
+    </div>
+    <div class="col-auto"><h2 class="mb-0">Add Lead</h2></div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="FullName">Full Name</label>
+                    <input class="form-control" asp-for="FullName" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="Email">Email</label>
+                    <input class="form-control" asp-for="Email" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="Company">Company</label>
+                    <input class="form-control" asp-for="Company" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="Phone">Phone</label>
+                    <input class="form-control" asp-for="Phone" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="EstimatedValue">Estimated Value ($)</label>
+                    <input class="form-control" asp-for="EstimatedValue" type="number" step="0.01" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="Status">Status</label>
+                    <select class="form-select" asp-for="Status" asp-items="Html.GetEnumSelectList<LeadStatus>()"></select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="AssignedTo">Assigned To</label>
+                    <input class="form-control" asp-for="AssignedTo" />
+                </div>
+            </div>
+            <div class="mt-4">
+                <button class="btn btn-primary" type="submit">Save Lead</button>
+                <a asp-action="Index" class="btn btn-phoenix-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

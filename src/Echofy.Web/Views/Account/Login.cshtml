@@ -1,0 +1,77 @@
+@model Echofy.Web.Models.LoginViewModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="flex h-screen">
+    @* Left panel — decorative (hidden on mobile) *@
+    <div class="hidden lg:block lg:w-1/2 relative bg-slate-900">
+        <div class="auth-bg-holder" style="background-image:url(~/assets/img/bg/30.png);"></div>
+        <div class="absolute inset-0 bg-slate-900/60"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center p-12 text-white">
+            <img src="~/assets/img/icons/logo.svg" alt="echofy" class="w-16 h-16 mb-6">
+            <h1 class="text-4xl font-bold mb-3">echofy</h1>
+            <p class="text-slate-300 text-lg text-center max-w-sm">Your all-in-one business management platform</p>
+        </div>
+    </div>
+
+    @* Right panel — form *@
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div class="w-full max-w-sm">
+            <a asp-controller="Dashboard" asp-action="Index" class="flex items-center justify-center mb-8 lg:hidden">
+                <img src="~/assets/img/icons/logo.svg" alt="echofy" class="w-12 h-12">
+            </a>
+
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">Sign In</h2>
+                <p class="text-gray-500 mt-1">Get access to your account</p>
+            </div>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger mb-5">
+                    <ul class="mb-0 list-none pl-0">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <form asp-action="Login" method="post" class="space-y-5">
+                <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+
+                <div>
+                    <label class="form-label" asp-for="Email">Email address</label>
+                    <input class="form-control" asp-for="Email" placeholder="name@example.com" />
+                    <span asp-validation-for="Email" class="text-danger text-xs mt-1"></span>
+                </div>
+
+                <div>
+                    <label class="form-label" asp-for="Password">Password</label>
+                    <input class="form-control" asp-for="Password" placeholder="Password" />
+                    <span asp-validation-for="Password" class="text-danger text-xs mt-1"></span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input class="form-check-input" asp-for="RememberMe" />
+                        <span class="text-sm text-gray-600">Remember me</span>
+                    </label>
+                </div>
+
+                <button class="btn btn-primary w-full" type="submit">Sign In</button>
+
+                <p class="text-center text-sm">
+                    <a class="text-indigo-600 font-semibold hover:text-indigo-700" asp-action="Register">Create an account</a>
+                </p>
+            </form>
+
+            <p class="mt-6 text-center text-xs text-gray-400">
+                <strong>Demo:</strong> admin@echofy.dev / Admin@1234!
+            </p>
+        </div>
+    </div>
+</div>

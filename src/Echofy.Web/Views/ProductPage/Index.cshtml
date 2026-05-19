@@ -1,0 +1,381 @@
+@model Echofy.Web.Models.ProductPageViewModel
+@using Echofy.Domain.Enums
+@using Echofy.Application.DTOs
+@{
+    ViewData["Title"] = Model.Product.Name;
+    Layout = "_PublicLayout";
+    var p = Model.Product;
+    var similar = ViewBag.SimilarProducts as IReadOnlyList<RecommendationItemDto> ?? [];
+}
+
+<div class="row g-5">
+
+    @* ── Left: image gallery ── *@
+    <div class="col-lg-6">
+        @if (p.Images.Any())
+        {
+            var mainImage = p.Images.FirstOrDefault(i => i.IsMain) ?? p.Images[0];
+            <div class="mb-3">
+                <img id="mainProductImage"
+                     src="@mainImage.Url"
+                     alt="@(mainImage.AltText ?? p.Name)"
+                     class="img-fluid rounded shadow-sm w-100"
+                     style="max-height: 420px; object-fit: cover;" />
+            </div>
+            @if (p.Images.Count > 1)
+            {
+                <div class="d-flex gap-2 flex-wrap">
+                    @foreach (var img in p.Images)
+                    {
+                        <img src="@img.Url"
+                             alt="@(img.AltText ?? p.Name)"
+                             class="rounded border @(img.IsMain ? "border-primary" : "") cursor-pointer"
+                             style="width: 72px; height: 72px; object-fit: cover;"
+                             onclick="document.getElementById('mainProductImage').src = this.src" />
+                    }
+                </div>
+            }
+        }
+        else if (!string.IsNullOrEmpty(p.ImageUrl))
+        {
+            <img src="@p.ImageUrl" alt="@p.Name"
+                 class="img-fluid rounded shadow-sm w-100"
+                 style="max-height: 420px; object-fit: cover;" />
+        }
+        else
+        {
+            <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                 style="height: 300px;">
+                <span class="fas fa-image fa-4x text-body-tertiary"></span>
+            </div>
+        }
+    </div>
+
+    @* ── Right: product info ── *@
+    <div class="col-lg-6">
+
+        @* Title + Favorite button row *@
+        <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+            <h1 class="fw-bold mb-0">@p.Name</h1>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <button id="btnFavorite"
+                        data-url="/p/@p.ShortId/favorite"
+                        class="btn @(Model.IsFavorited ? "btn-danger" : "btn-phoenix-danger") btn-sm flex-shrink-0 mt-1"
+                        title="@(Model.IsFavorited ? "Remove from favorites" : "Save to favorites")">
+                    <span class="fas fa-heart me-1"></span>
+                    <span id="btnFavoriteText">@(Model.IsFavorited ? "Saved" : "Save")</span>
+                </button>
+            }
+            else
+            {
+                <a href="/Account/Login?returnUrl=@Uri.EscapeDataString($"/p/{p.ShortId}")"
+                   class="btn btn-phoenix-danger btn-sm flex-shrink-0 mt-1"
+                   title="Login to save to favorites">
+                    <span class="far fa-heart me-1"></span>Save
+                </a>
+            }
+        </div>
+
+        @* Average rating summary *@
+        @if (Model.Reviews.Count > 0)
+        {
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="text-warning">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <span class="fas fa-star@(i <= Math.Round(Model.AverageRating) ? "" : (i - 0.5 <= Model.AverageRating ? "-half-alt" : "-o"))"></span>
+                    }
+                </div>
+                <span class="fw-semibold">@Model.AverageRating.ToString("F1")</span>
+                <span class="text-body-tertiary fs-9">(@Model.Reviews.Count review@(Model.Reviews.Count == 1 ? "" : "s"))</span>
+            </div>
+        }
+
+        @if (p.CategoryNames.Count > 0)
+        {
+            <div class="mb-3">
+                @foreach (var cat in p.CategoryNames)
+                {
+                    <span class="badge badge-phoenix badge-phoenix-primary me-1">@cat</span>
+                }
+            </div>
+        }
+
+        @* Active discount banner *@
+        @if (p.ActiveOffer is not null)
+        {
+            <div class="alert alert-success d-flex align-items-center gap-2 mb-3" role="alert">
+                <span class="fas fa-tag"></span>
+                <span>
+                    <strong>@p.ActiveOffer.Name</strong> —
+                    @if (p.ActiveOffer.DiscountType == DiscountType.Percentage)
+                    {
+                        <span>@p.ActiveOffer.DiscountValue.ToString("N0")% off</span>
+                    }
+                    else
+                    {
+                        <span>$@p.ActiveOffer.DiscountValue.ToString("N2") off</span>
+                    }
+                    · Ends @p.ActiveOffer.EndDate.ToString("dd MMM yyyy")
+                </span>
+            </div>
+        }
+
+        @* Pricing *@
+        <div class="mb-4">
+            @if (p.ActiveOffer is not null)
+            {
+                <div class="d-flex align-items-baseline gap-3">
+                    <span class="fw-bold fs-2 text-success">$@p.EffectivePrice.ToString("N2")</span>
+                    <span class="text-decoration-line-through text-body-tertiary fs-5">$@p.Price.ToString("N2")</span>
+                </div>
+            }
+            else
+            {
+                <span class="fw-bold fs-2">$@p.Price.ToString("N2")</span>
+            }
+        </div>
+
+        @* Stock *@
+        <div class="mb-4">
+            @{
+                var stockClass = p.StockQuantity == 0 ? "danger" : p.StockQuantity <= 5 ? "warning" : "success";
+                var stockText = p.StockQuantity == 0 ? "Out of Stock" : p.StockQuantity <= 5 ? $"Low Stock ({p.StockQuantity} left)" : "In Stock";
+            }
+            <span class="badge badge-phoenix badge-phoenix-@stockClass fs-10">
+                <span class="fas fa-circle me-1" style="font-size: 0.5rem;"></span>@stockText
+            </span>
+        </div>
+
+        @* Size *@
+        @if (!string.IsNullOrEmpty(p.Size) || !string.IsNullOrEmpty(p.UnitOfMeasureAbbreviation))
+        {
+            <div class="mb-3 text-body-secondary fs-9">
+                <span class="fas fa-ruler me-1"></span>
+                <strong>@($"{p.Size} {p.UnitOfMeasureAbbreviation}".Trim())</strong>
+            </div>
+        }
+
+        @* SKU *@
+        @if (!string.IsNullOrEmpty(p.Sku))
+        {
+            <div class="text-body-tertiary fs-10 mb-3">
+                SKU: <code class="fs-10">@p.Sku</code>
+            </div>
+        }
+
+        @* Description *@
+        @if (!string.IsNullOrEmpty(p.Description))
+        {
+            <p class="text-body-secondary mb-4">@p.Description</p>
+        }
+
+        @* Manufacturer *@
+        @if (!string.IsNullOrEmpty(p.ManufacturerName))
+        {
+            <div class="text-body-tertiary fs-10 mb-1">
+                <span class="fas fa-industry me-1"></span>Manufactured by
+                @if (!string.IsNullOrEmpty(p.ManufacturerWebsite))
+                {
+                    <a href="@p.ManufacturerWebsite" target="_blank" rel="noopener noreferrer" class="fw-semibold">@p.ManufacturerName <span class="fas fa-external-link-alt" style="font-size:0.6rem;"></span></a>
+                }
+                else
+                {
+                    <strong>@p.ManufacturerName</strong>
+                }
+            </div>
+        }
+
+        @* Client attribution *@
+        @if (!string.IsNullOrEmpty(p.CompanyName))
+        {
+            <div class="text-body-tertiary fs-10">
+                <span class="fas fa-building me-1"></span>Sold by <strong>@p.CompanyName</strong>
+            </div>
+        }
+    </div>
+</div>
+
+@* ── Reviews section ── *@
+<hr class="my-5" id="reviews">
+
+<div class="row g-5">
+    <div class="col-lg-8">
+        <h4 class="mb-4">
+            Customer Reviews
+            @if (Model.Reviews.Count > 0)
+            {
+                <span class="text-body-tertiary fs-9 fw-normal ms-2">(@Model.Reviews.Count)</span>
+            }
+        </h4>
+
+        @if (Model.Reviews.Count == 0)
+        {
+            <p class="text-body-tertiary">No reviews yet — be the first to review this product.</p>
+        }
+        else
+        {
+            @foreach (var review in Model.Reviews)
+            {
+                <div class="d-flex gap-3 mb-4 pb-4 border-bottom">
+                    <div class="avatar avatar-m flex-shrink-0">
+                        <div class="avatar-name rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center"
+                             style="width:40px;height:40px;font-size:0.85rem;">
+                            @(review.UserName.Length > 0 ? review.UserName[0].ToString().ToUpper() : "?")
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="fw-semibold">@review.UserName</span>
+                            <span class="text-body-tertiary fs-10">@review.CreatedAt.ToString("dd MMM yyyy")</span>
+                        </div>
+                        <div class="text-warning mb-1" style="font-size:0.8rem;">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <span class="fas fa-star@(i <= review.Rating ? "" : "-o")"></span>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(review.Comment))
+                        {
+                            <p class="mb-0 text-body-secondary fs-9">@review.Comment</p>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    @* ── Submit review form ── *@
+    <div class="col-lg-4">
+        @if (!User.Identity!.IsAuthenticated)
+        {
+            <div class="card">
+                <div class="card-body text-center py-4">
+                    <span class="fas fa-star fa-2x text-warning mb-3 d-block"></span>
+                    <h6>Share your experience</h6>
+                    <p class="text-body-tertiary fs-9 mb-3">Log in to leave a rating and review.</p>
+                    <a href="/Account/Login?returnUrl=@Uri.EscapeDataString($"/p/{p.ShortId}#reviews")"
+                       class="btn btn-primary btn-sm">
+                        Login to Review
+                    </a>
+                </div>
+            </div>
+        }
+        else if (Model.UserHasReviewed)
+        {
+            <div class="alert alert-success d-flex gap-2 align-items-center fs-9">
+                <span class="fas fa-check-circle"></span>
+                You have already reviewed this product.
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-header"><h6 class="mb-0">Write a Review</h6></div>
+                <div class="card-body">
+                    <form asp-controller="ProductPage" asp-action="SubmitReview" asp-route-shortId="@p.ShortId" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label">Your Rating <span class="text-danger">*</span></label>
+                            <div class="star-rating d-flex gap-1">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <input type="radio" id="star@(i)" name="rating" value="@i" class="d-none star-radio" required>
+                                    <label for="star@(i)" class="star-label fs-4" title="@i star@(i == 1 ? "" : "s")" style="cursor:pointer;color:#adb5bd;">
+                                        <span class="fas fa-star"></span>
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="comment">Comment <span class="text-body-tertiary fs-10">(optional)</span></label>
+                            <textarea class="form-control" id="comment" name="comment" rows="4"
+                                      placeholder="Share your thoughts about this product..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Submit Review</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (similar.Count > 0)
+{
+    <hr class="my-5">
+    <h4 class="mb-4">You might also like</h4>
+    <div class="d-flex gap-3 overflow-auto pb-2">
+        @foreach (var rec in similar)
+        {
+            <div class="card flex-shrink-0" style="width:180px;">
+                @if (!string.IsNullOrEmpty(rec.ImageUrl))
+                {
+                    <img src="@rec.ImageUrl" class="card-img-top object-fit-cover" style="height:130px;" alt="@rec.Name">
+                }
+                else
+                {
+                    <div class="bg-light d-flex align-items-center justify-content-center" style="height:130px;">
+                        <span class="fas fa-image fa-2x text-body-tertiary"></span>
+                    </div>
+                }
+                <div class="card-body p-3">
+                    <div class="fw-semibold fs-9 text-truncate mb-1">
+                        <a href="/p/@rec.ShortId" class="text-decoration-none text-body stretched-link">@rec.Name</a>
+                    </div>
+                    <div class="text-primary fw-semibold fs-9">$@rec.Price.ToString("N2")</div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+<script>
+(function () {
+    // ── Star rating (stars 1-5 in DOM order; no Bootstrap class so plain style.color works) ──
+    var starLabels = Array.from(document.querySelectorAll('.star-label'));
+    function paintStars(count) {
+        starLabels.forEach(function (l, i) {
+            l.style.color = i < count ? '#f5a623' : '#adb5bd';
+        });
+    }
+    starLabels.forEach(function (lbl, idx) {
+        lbl.addEventListener('mouseenter', function () { paintStars(idx + 1); });
+    });
+    var starGroup = document.querySelector('.star-rating');
+    if (starGroup) {
+        starGroup.addEventListener('mouseleave', function () {
+            var checked = document.querySelector('.star-radio:checked');
+            paintStars(checked ? parseInt(checked.value) : 0);
+        });
+    }
+    document.querySelectorAll('.star-radio').forEach(function (radio) {
+        radio.addEventListener('change', function () { paintStars(parseInt(this.value)); });
+    });
+
+    // ── Favorites AJAX toggle ──
+    var btn = document.getElementById('btnFavorite');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        var url = btn.dataset.url;
+        fetch(url, { method: 'POST' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            var text = document.getElementById('btnFavoriteText');
+            if (data.favorited) {
+                btn.classList.remove('btn-phoenix-danger');
+                btn.classList.add('btn-danger');
+                text.textContent = 'Saved';
+                btn.title = 'Remove from favorites';
+            } else {
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-phoenix-danger');
+                text.textContent = 'Save';
+                btn.title = 'Save to favorites';
+            }
+        });
+    });
+}());
+</script>
+}

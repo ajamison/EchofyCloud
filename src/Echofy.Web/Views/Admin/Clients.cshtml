@@ -1,0 +1,71 @@
+@model List<Echofy.Domain.Entities.Client>
+@{
+    ViewData["Title"] = "Clients";
+    ViewData["ActivePage"] = "AdminClients";
+    Layout = "_Layout";
+}
+
+<div class="pb-5">
+    <div class="row g-4 g-xl-6">
+        <div class="col-12">
+            <div class="mb-4 d-flex align-items-center justify-content-between">
+                <h2 class="mb-0">Clients</h2>
+                <a asp-action="CreateClient" class="btn btn-primary btn-sm">
+                    <span class="fas fa-plus me-1"></span>Add Client
+                </a>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm fs-9 mb-0 datatable"
+                               data-column-defs='[{"orderable":false,"targets":-1}]'>
+                            <thead>
+                                <tr>
+                                    <th class="align-middle">NAME</th>
+                                    <th class="align-middle text-center">E-COMMERCE</th>
+                                    <th class="align-middle text-center">CRM</th>
+                                    <th class="align-middle text-center">KANBAN</th>
+                                    <th class="align-middle text-center">CALENDAR</th>
+                                    <th class="align-middle text-center">CHAT</th>
+                                    <th class="align-middle text-center">ACTIVE</th>
+                                    <th class="align-middle"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var client in Model)
+                                {
+                                    <tr>
+                                        <td class="align-middle fw-semibold">@client.Name</td>
+                                        <td class="align-middle text-center">
+                                            @if (client.HasECommerce) { <span class="fas fa-check text-success"></span> } else { <span class="fas fa-times text-danger"></span> }
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @if (client.HasCrm) { <span class="fas fa-check text-success"></span> } else { <span class="fas fa-times text-danger"></span> }
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @if (client.HasKanban) { <span class="fas fa-check text-success"></span> } else { <span class="fas fa-times text-danger"></span> }
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @if (client.HasCalendar) { <span class="fas fa-check text-success"></span> } else { <span class="fas fa-times text-danger"></span> }
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @if (client.HasChat) { <span class="fas fa-check text-success"></span> } else { <span class="fas fa-times text-danger"></span> }
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @if (client.IsActive) { <span class="badge badge-phoenix badge-phoenix-success">Active</span> }
+                                            else { <span class="badge badge-phoenix badge-phoenix-secondary">Inactive</span> }
+                                        </td>
+                                        <td class="align-middle text-end">
+                                            <a asp-action="EditClient" asp-route-id="@client.Id"
+                                               class="btn btn-phoenix-secondary btn-sm">Edit</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

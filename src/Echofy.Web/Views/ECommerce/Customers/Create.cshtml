@@ -1,0 +1,59 @@
+@model Echofy.Application.DTOs.CustomerDto
+@{
+    ViewData["Title"] = "Add Customer";
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-phoenix-secondary btn-sm"><span class="fas fa-arrow-left me-2"></span>Back</a>
+    </div>
+    <div class="col-auto"><h2 class="mb-0">Add Customer</h2></div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="FullName">Full Name</label>
+                    <input class="form-control" asp-for="FullName" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="Email">Email</label>
+                    <input class="form-control" asp-for="Email" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="Phone">Phone</label>
+                    <input class="form-control" asp-for="Phone" />
+                </div>
+                <div class="col-12"><hr /><h5>Address</h5></div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="Street">Street</label>
+                    <input class="form-control" asp-for="Street" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="City">City</label>
+                    <input class="form-control" asp-for="City" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="Province">Province / State</label>
+                    <input class="form-control" asp-for="Province" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="Country">Country</label>
+                    <input class="form-control" asp-for="Country" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label" asp-for="Notes">Notes</label>
+                    <textarea class="form-control" asp-for="Notes" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button class="btn btn-primary" type="submit">Save Customer</button>
+                <a asp-action="Index" class="btn btn-phoenix-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

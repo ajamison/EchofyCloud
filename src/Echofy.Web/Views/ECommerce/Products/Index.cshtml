@@ -1,0 +1,87 @@
+@model IReadOnlyList<Echofy.Application.DTOs.ProductDto>
+@using Echofy.Application.DTOs
+@{
+    ViewData["Title"] = "Products";
+    var recs = ViewBag.Recommendations as IReadOnlyList<RecommendationItemDto> ?? [];
+}
+
+@if (recs.Count > 0)
+{
+    <div class="mb-4">
+        <h5 class="mb-3">Recommended for you</h5>
+        <div class="d-flex gap-3 flex-wrap">
+            @foreach (var rec in recs)
+            {
+                <div class="card flex-shrink-0" style="width:160px;">
+                    @if (!string.IsNullOrEmpty(rec.ImageUrl))
+                    {
+                        <img src="@rec.ImageUrl" class="card-img-top object-fit-cover" style="height:110px;" alt="@rec.Name">
+                    }
+                    else
+                    {
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height:110px;">
+                            <span class="fas fa-image fa-2x text-body-tertiary"></span>
+                        </div>
+                    }
+                    <div class="card-body p-2">
+                        <div class="fs-10 fw-semibold text-truncate mb-1">
+                            <a asp-action="Details" asp-route-id="@rec.ProductId" class="text-decoration-none text-body stretched-link">@rec.Name</a>
+                        </div>
+                        <div class="fs-10 text-primary fw-semibold">$@rec.Price.ToString("N2")</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-auto"><h2 class="mb-0">Products</h2></div>
+    <div class="col-auto ms-auto">
+        <a asp-action="Create" class="btn btn-primary btn-sm"><span class="fas fa-plus me-2"></span>Add Product</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm fs-9 mb-0 datatable"
+                   data-column-defs='[{"orderable":false,"targets":-1}]'>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td><a asp-action="Details" asp-route-id="@p.Id" class="fw-semibold">@p.Name</a></td>
+                            <td>@string.Join(", ", p.CategoryNames)</td>
+                            <td data-order="@p.Price">$@p.Price.ToString("N2")</td>
+                            <td data-order="@p.StockQuantity">
+                                <span class="badge badge-phoenix badge-phoenix-@(p.StockQuantity == 0 ? "danger" : p.StockQuantity <= 5 ? "warning" : "success") fs-10">
+                                    @p.StockQuantity
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-phoenix badge-phoenix-@(p.IsActive ? "success" : "secondary") fs-10">
+                                    @(p.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-phoenix-secondary btn-sm">Edit</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

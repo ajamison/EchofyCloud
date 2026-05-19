@@ -1,0 +1,51 @@
+@model Echofy.Web.Models.Admin.UnitOfMeasureViewModel
+@{
+    ViewData["Title"] = "Edit Unit of Measure";
+    ViewData["ActivePage"] = "AdminUnitsOfMeasure";
+    Layout = "_Layout";
+}
+
+<div class="pb-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-7 col-xl-5">
+            <div class="mb-4">
+                <h2 class="mb-0">Edit Unit of Measure</h2>
+                <p class="text-body-tertiary mb-0">@Model.Name (@Model.Abbreviation)</p>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="EditUnitOfMeasure" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 fs-9 mb-3" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label class="form-label" asp-for="Name">Name <span class="text-danger">*</span></label>
+                            <input class="form-control" asp-for="Name" />
+                            <span class="text-danger fs-9" asp-validation-for="Name"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label" asp-for="Abbreviation">Abbreviation <span class="text-danger">*</span></label>
+                            <input class="form-control" asp-for="Abbreviation" />
+                            <div class="form-text">Short symbol used on product pages (e.g. oz, lb, ml, kg).</div>
+                            <span class="text-danger fs-9" asp-validation-for="Abbreviation"></span>
+                        </div>
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" asp-for="IsActive" role="switch" />
+                                <label class="form-check-label" asp-for="IsActive">Active</label>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a asp-action="UnitsOfMeasure" class="btn btn-phoenix-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

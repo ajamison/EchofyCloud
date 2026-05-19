@@ -1,0 +1,170 @@
+@using Echofy.Application.DTOs
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["ActivePage"] = "CustomerDashboard";
+    Layout = "_Layout";
+
+    var favCount = (int)(ViewBag.FavoritesCount ?? 0);
+    var recent = ViewBag.RecentFavorites as IEnumerable<ProductDto> ?? [];
+    var recs = ViewBag.Recommendations as IReadOnlyList<RecommendationItemDto> ?? [];
+    var referral = ViewBag.Referral as ReferralDto;
+    var welcomeCoupon = TempData["WelcomeCoupon"] as string;
+}
+
+<div class="row g-3 mb-4 align-items-center">
+    <div class="col-auto"><h2 class="mb-0">My Dashboard</h2></div>
+</div>
+
+@if (!string.IsNullOrEmpty(welcomeCoupon))
+{
+    <div class="alert alert-success d-flex align-items-start gap-3 mb-4" role="alert">
+        <span class="fas fa-gift fa-lg mt-1 text-success flex-shrink-0"></span>
+        <div class="flex-grow-1">
+            <div class="fw-bold mb-1">Welcome! You've earned a discount.</div>
+            <p class="mb-2">Thanks for signing up with a referral code. Use the coupon below for <strong>$5 off</strong> your first order.</p>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <code class="fs-5 fw-bold px-3 py-1 bg-white border rounded" id="welcome-coupon">@welcomeCoupon</code>
+                <button class="btn btn-sm btn-success" type="button" onclick="copyWelcomeCoupon()">
+                    <span class="fas fa-copy me-1"></span>Copy Code
+                </button>
+                <span class="text-body-secondary fs-10">Valid for 90 days</span>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <script>
+        function copyWelcomeCoupon() {
+            navigator.clipboard.writeText('@welcomeCoupon').then(() => {
+                const btn = event.target.closest('button');
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<span class="fas fa-check me-1"></span>Copied!';
+                setTimeout(() => btn.innerHTML = orig, 2000);
+            });
+        }
+    </script>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-4">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="bg-primary-subtle rounded-3 p-3">
+                    <span class="fas fa-heart text-primary fs-4"></span>
+                </div>
+                <div>
+                    <div class="text-body-tertiary fs-9">Saved Favorites</div>
+                    <div class="fw-bold fs-4">@favCount</div>
+                </div>
+                <a asp-controller="Customer" asp-action="Favorites" class="stretched-link"></a>
+            </div>
+        </div>
+    </div>
+    @if (referral is not null)
+    {
+        <div class="col-sm-6 col-xl-4">
+            <div class="card h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-success-subtle rounded-3 p-3">
+                        <span class="fas fa-users text-success fs-4"></span>
+                    </div>
+                    <div>
+                        <div class="text-body-tertiary fs-9">My Referrals</div>
+                        <div class="fw-bold fs-4">@referral.TotalReferrals</div>
+                        @if (referral.TotalPoints > 0)
+                        {
+                            <div class="text-success fs-10">@referral.TotalPoints pts earned</div>
+                        }
+                    </div>
+                    <a asp-controller="Customer" asp-action="Referrals" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <div class="card h-100 border-primary border-2">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-primary-subtle rounded-3 p-3">
+                        <span class="fas fa-gift text-primary fs-4"></span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="text-body-tertiary fs-9">Your Referral Code</div>
+                        <div class="fw-bold fs-5 text-primary">@referral.Code</div>
+                        <div class="fs-10 text-body-secondary">Share &amp; earn 100 points per referral</div>
+                    </div>
+                    <a asp-controller="Customer" asp-action="Referrals" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (recent.Any())
+{
+    <div class="mb-2">
+        <h5 class="mb-3">Recently Saved</h5>
+        <div class="row g-3">
+            @foreach (var p in recent)
+            {
+                <div class="col-sm-6 col-lg-4">
+                    <div class="card h-100">
+                        @if (!string.IsNullOrEmpty(p.ImageUrl))
+                        {
+                            <img src="@p.ImageUrl" class="card-img-top object-fit-cover" style="height:160px;" alt="@p.Name">
+                        }
+                        <div class="card-body">
+                            <h6 class="card-title mb-1">
+                                <a href="/p/@p.ShortId" class="stretched-link text-decoration-none text-body">@p.Name</a>
+                            </h6>
+                            <div class="fw-semibold text-primary">$@p.Price.ToString("N2")</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-controller="Customer" asp-action="Favorites" class="btn btn-phoenix-primary btn-sm">
+            View All Favorites <span class="fas fa-arrow-right ms-1"></span>
+        </a>
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <span class="fas fa-heart fa-3x text-body-tertiary mb-3 d-block"></span>
+        <h5 class="text-body-tertiary">No favorites yet</h5>
+        <p class="text-body-tertiary fs-9 mb-0">Browse products and click the heart icon to save your favorites.</p>
+    </div>
+}
+
+@if (recs.Count > 0)
+{
+    <hr class="my-4">
+    <h5 class="mb-3">Recommended for you</h5>
+    <div class="row g-3">
+        @foreach (var rec in recs)
+        {
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card h-100">
+                    @if (!string.IsNullOrEmpty(rec.ImageUrl))
+                    {
+                        <img src="@rec.ImageUrl" class="card-img-top object-fit-cover" style="height:140px;" alt="@rec.Name">
+                    }
+                    else
+                    {
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height:140px;">
+                            <span class="fas fa-image fa-2x text-body-tertiary"></span>
+                        </div>
+                    }
+                    <div class="card-body p-3">
+                        <h6 class="card-title mb-1 text-truncate">
+                            <a href="/p/@rec.ShortId" class="stretched-link text-decoration-none text-body">@rec.Name</a>
+                        </h6>
+                        <div class="fw-semibold text-primary">$@rec.Price.ToString("N2")</div>
+                        <div class="text-body-tertiary fs-10 mt-1">@rec.Reason</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

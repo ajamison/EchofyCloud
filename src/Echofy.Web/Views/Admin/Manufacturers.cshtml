@@ -1,0 +1,68 @@
+@model List<Echofy.Web.Models.Admin.ManufacturerViewModel>
+@{
+    ViewData["Title"] = "Manufacturers";
+    ViewData["ActivePage"] = "AdminManufacturers";
+    Layout = "_Layout";
+}
+
+<div class="pb-5">
+    <div class="row g-4 g-xl-6">
+        <div class="col-12">
+            <div class="mb-4 d-flex align-items-center justify-content-between">
+                <h2 class="mb-0">Manufacturers</h2>
+                <a asp-action="CreateManufacturer" class="btn btn-primary btn-sm">
+                    <span class="fas fa-plus me-1"></span>Add Manufacturer
+                </a>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm fs-9 mb-0 datatable"
+                               data-column-defs='[{"orderable":false,"targets":-1}]'>
+                            <thead>
+                                <tr>
+                                    <th class="align-middle">Name</th>
+                                    <th class="align-middle">Website</th>
+                                    <th class="align-middle text-center">Status</th>
+                                    <th class="align-middle"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var m in Model)
+                                {
+                                    <tr>
+                                        <td class="align-middle fw-semibold">@m.Name</td>
+                                        <td class="align-middle">
+                                            @if (!string.IsNullOrEmpty(m.Website))
+                                            {
+                                                <a href="@m.Website" target="_blank" rel="noopener" class="text-truncate d-inline-block" style="max-width:260px;">@m.Website</a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-body-tertiary">—</span>
+                                            }
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @if (m.IsActive)
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-secondary">Inactive</span>
+                                            }
+                                        </td>
+                                        <td class="align-middle text-end">
+                                            <a asp-action="EditManufacturer" asp-route-id="@m.Id"
+                                               class="btn btn-phoenix-secondary btn-sm">Edit</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

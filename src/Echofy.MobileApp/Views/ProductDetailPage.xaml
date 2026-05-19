@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Echofy.MobileApp.ViewModels"
+             x:Class="Echofy.MobileApp.Views.ProductDetailPage"
+             x:DataType="vm:ProductDetailViewModel"
+             Title="{Binding Product.Name}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <!-- Product image -->
+            <Image Source="{Binding ImageSource}"
+                   HeightRequest="240"
+                   Aspect="AspectFill"
+                   IsVisible="{Binding ImageSource, Converter={StaticResource StringToBoolConverter}}" />
+
+            <!-- Name -->
+            <Label Text="{Binding Product.Name}"
+                   FontSize="22"
+                   FontAttributes="Bold" />
+
+            <!-- Manufacturer -->
+            <Label Text="{Binding Product.ManufacturerName}"
+                   TextColor="Gray"
+                   IsVisible="{Binding Product.ManufacturerName, Converter={StaticResource StringToBoolConverter}}" />
+
+            <!-- SKU / UPC -->
+            <HorizontalStackLayout Spacing="12">
+                <Label Text="{Binding Product.Sku, StringFormat='SKU: {0}'}"
+                       TextColor="Gray" FontSize="12"
+                       IsVisible="{Binding Product.Sku, Converter={StaticResource StringToBoolConverter}}" />
+                <Label Text="{Binding Product.ManufacturerUpc, StringFormat='UPC: {0}'}"
+                       TextColor="Gray" FontSize="12"
+                       IsVisible="{Binding Product.ManufacturerUpc, Converter={StaticResource StringToBoolConverter}}" />
+            </HorizontalStackLayout>
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Pricing -->
+            <HorizontalStackLayout Spacing="12">
+                <Label Text="{Binding Product.EffectivePrice, StringFormat='${0:F2}'}"
+                       FontSize="26"
+                       FontAttributes="Bold"
+                       TextColor="#2e7d32" />
+                <Label Text="{Binding Product.Price, StringFormat='${0:F2}'}"
+                       FontSize="18"
+                       TextDecorations="Strikethrough"
+                       TextColor="Gray"
+                       VerticalOptions="End"
+                       IsVisible="{Binding Product.ActiveOffer, Converter={StaticResource NullToBoolConverter}}" />
+            </HorizontalStackLayout>
+
+            <!-- Active discount badge -->
+            <Border BackgroundColor="#ff6f00"
+                    Padding="10,5"
+                    StrokeShape="RoundRectangle 4"
+                    IsVisible="{Binding Product.ActiveOffer, Converter={StaticResource NullToBoolConverter}}">
+                <Label Text="{Binding Product.ActiveOffer.Name}"
+                       TextColor="White"
+                       FontAttributes="Bold"
+                       FontSize="13" />
+            </Border>
+
+            <!-- Stock -->
+            <Label Text="{Binding Product.StockQuantity, StringFormat='In stock: {0} units'}"
+                   TextColor="{Binding Product.StockQuantity, Converter={StaticResource StockColorConverter}}" />
+
+            <!-- Unit of measure -->
+            <Label Text="{Binding Product.UnitOfMeasureName}"
+                   TextColor="Gray"
+                   FontSize="13"
+                   IsVisible="{Binding Product.UnitOfMeasureName, Converter={StaticResource StringToBoolConverter}}" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Description -->
+            <Label Text="Description"
+                   FontAttributes="Bold"
+                   FontSize="16" />
+            <Label Text="{Binding Product.Description}"
+                   LineBreakMode="WordWrap" />
+
+            <Button Text="Scan Another"
+                    Command="{Binding GoBackCommand}"
+                    BackgroundColor="#512BD4"
+                    TextColor="White"
+                    CornerRadius="8"
+                    Margin="0,16,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

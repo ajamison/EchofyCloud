@@ -1,0 +1,8 @@
+/* prettier-ignore */
+/*# sourceMappingURL=user.min.css.map */
+
+/* Page footer — Phoenix .footer already provides bottom:0;left:0;width:100%;
+   adding position:absolute makes it anchor to the bottom of .content (position:relative). */
+.footer {
+  position: absolute;
+}

@@ -1,0 +1,126 @@
+@model Echofy.Application.DTOs.ProductDto
+@{
+    ViewData["Title"] = "Add Product";
+    ViewData["ActivePage"] = "Products";
+    Layout = "_Layout";
+}
+
+<div class="row g-3 mb-4 align-items-center">
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-phoenix-secondary btn-sm">
+            <span class="fas fa-arrow-left me-2"></span>Back to Products
+        </a>
+    </div>
+    <div class="col-auto"><h2 class="mb-0">Add Product</h2></div>
+</div>
+
+<form asp-action="Create" method="post">
+    <div class="row g-4">
+
+        @* ── Left column: main fields ── *@
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Product Information</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" asp-for="Name">Product Name <span class="text-danger">*</span></label>
+                            <input class="form-control" asp-for="Name" placeholder="e.g. Wireless Headphones Pro" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Categories</label>
+                            <div class="d-flex flex-wrap gap-3 pt-1">
+                                @if (ViewBag.Categories != null)
+                                {
+                                    foreach (var cat in ViewBag.Categories)
+                                    {
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox"
+                                                   name="CategoryIds" value="@cat.Id" id="cat_@cat.Id"
+                                                   @(Model.CategoryIds.Contains((int)cat.Id) ? "checked" : "") />
+                                            <label class="form-check-label" for="cat_@cat.Id">@cat.Name</label>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-body-tertiary fs-9">No categories yet — add them in Admin › Categories.</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Sku">SKU</label>
+                            <input class="form-control" asp-for="Sku" placeholder="e.g. WH-PRO-001" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="ManufacturerUpc">Manufacturer UPC</label>
+                            <input class="form-control" asp-for="ManufacturerUpc" placeholder="e.g. 012345678905" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="ImageUrl">Image URL</label>
+                            <input class="form-control" asp-for="ImageUrl" placeholder="https://..." />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Size">Size</label>
+                            <input class="form-control" asp-for="Size" placeholder="e.g. 20" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="ManufacturerId">Manufacturer</label>
+                            <select class="form-select" asp-for="ManufacturerId" asp-items="ViewBag.Manufacturers"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="UnitOfMeasureId">Unit of Measure</label>
+                            <select class="form-select" asp-for="UnitOfMeasureId" asp-items="ViewBag.UnitsOfMeasure"></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" asp-for="Description">Description</label>
+                            <textarea class="form-control" asp-for="Description" rows="4"
+                                      placeholder="Describe the product..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ── Right column: pricing, stock, status ── *@
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Pricing &amp; Stock</h5></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Price">Price ($) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input class="form-control" asp-for="Price" type="number" step="0.01" min="0" placeholder="0.00" />
+                        </div>
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="StockQuantity">Stock Quantity</label>
+                        <input class="form-control" asp-for="StockQuantity" type="number" min="0" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="CompanyId">Company</label>
+                        <select class="form-select" asp-for="CompanyId" asp-items="ViewBag.Companies"></select>
+                        <div class="form-text">Assign this product to a specific company.</div>
+                    </div>
+                    <div class="mb-1">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" asp-for="IsActive" type="checkbox" role="switch" />
+                            <label class="form-check-label fw-semibold" asp-for="IsActive">Active</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" type="submit">
+                    <span class="fas fa-save me-2"></span>Save Product
+                </button>
+                <a asp-action="Index" class="btn btn-phoenix-secondary">Cancel</a>
+            </div>
+        </div>
+
+    </div>
+</form>

@@ -1,0 +1,52 @@
+@model IReadOnlyList<Echofy.Application.DTOs.CustomerListItemDto>
+@{
+    ViewData["Title"] = "Customers";
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-auto">
+        <h2 class="mb-0">Customers</h2>
+    </div>
+    <div class="col-auto ms-auto">
+        <a asp-action="Create" class="btn btn-primary btn-sm">
+            <span class="fas fa-plus me-2"></span>Add Customer
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm fs-9 mb-0 datatable"
+                   data-column-defs='[{"orderable":false,"targets":-1}]'>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Joined</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@c.Id" class="fw-semibold text-body-emphasis">
+                                    @c.FullName
+                                </a>
+                            </td>
+                            <td>@c.Email</td>
+                            <td>@c.Phone</td>
+                            <td data-order="@c.JoinedDate.ToString("yyyy-MM-dd")">@c.JoinedDate.ToString("MMM d, yyyy")</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@c.Id" class="btn btn-phoenix-secondary btn-sm">View</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

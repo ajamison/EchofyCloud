@@ -1,0 +1,101 @@
+@model Echofy.Application.DTOs.CompanyDto
+@{
+    ViewData["Title"] = "Edit Company";
+    ViewData["ActivePage"] = "AdminCompanies";
+    Layout = "_Layout";
+}
+
+<div class="row g-3 mb-4 align-items-center">
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-phoenix-secondary btn-sm">
+            <span class="fas fa-arrow-left me-2"></span>Back to Companies
+        </a>
+    </div>
+    <div class="col-auto"><h2 class="mb-0">Edit Company</h2></div>
+</div>
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Company Details</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Name">Name <span class="text-danger">*</span></label>
+                            <input class="form-control" asp-for="Name" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="ClientId">Client <span class="text-danger">*</span></label>
+                            <select class="form-select" asp-for="ClientId" asp-items="ViewBag.Clients"></select>
+                            <span asp-validation-for="ClientId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Email">Email</label>
+                            <input class="form-control" asp-for="Email" type="email" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Phone">Phone</label>
+                            <input class="form-control" asp-for="Phone" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Website">Website</label>
+                            <input class="form-control" asp-for="Website" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="TaxNumber">Tax Number</label>
+                            <input class="form-control" asp-for="TaxNumber" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" asp-for="Address">Address</label>
+                            <input class="form-control" asp-for="Address" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="City">City</label>
+                            <input class="form-control" asp-for="City" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Country">Country</label>
+                            <input class="form-control" asp-for="Country" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Status</h5></div>
+                <div class="card-body">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" asp-for="IsActive" type="checkbox" role="switch" />
+                        <label class="form-check-label fw-semibold" asp-for="IsActive">Active</label>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Info</h5></div>
+                <div class="card-body fs-9">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-body-tertiary">Created</span>
+                        <span>@Model.CreatedAt.ToString("dd MMM yyyy")</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.ClientName))
+                    {
+                        <div class="d-flex justify-content-between">
+                            <span class="text-body-tertiary">Client</span>
+                            <span>@Model.ClientName</span>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" type="submit">
+                    <span class="fas fa-save me-2"></span>Save Changes
+                </button>
+                <a asp-action="Index" class="btn btn-phoenix-secondary">Cancel</a>
+            </div>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en-US" class="h-full">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"] - Echofy</title>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="~/assets/img/favicons/apple-touch-icon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="~/assets/img/favicons/favicon.ico">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+    <link rel="stylesheet" href="~/css/tailwind.css">
+</head>
+<body class="min-h-full flex flex-col font-sans bg-gray-50 text-gray-700">
+    <nav class="bg-white border-b border-gray-200 px-6 py-4">
+        <a href="/" class="flex items-center gap-2 no-underline w-fit">
+            <img src="~/assets/img/icons/logo.svg" alt="echofy" class="w-7 h-7">
+            <span class="text-xl font-bold text-indigo-600">Echofy</span>
+        </a>
+    </nav>
+
+    <main class="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+        @RenderBody()
+    </main>
+
+    <footer class="border-t border-gray-200 py-5 mt-8">
+        <div class="max-w-5xl mx-auto px-4 text-center text-xs text-gray-400">
+            &copy; @DateTime.UtcNow.Year Echofy. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="~/vendors/fontawesome/all.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

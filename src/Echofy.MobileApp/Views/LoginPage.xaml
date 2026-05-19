@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Echofy.MobileApp.ViewModels"
+             x:Class="Echofy.MobileApp.Views.LoginPage"
+             x:DataType="vm:LoginViewModel"
+             Title="Sign In"
+             Shell.NavBarIsVisible="False">
+
+    <VerticalStackLayout Padding="40,60,40,40" Spacing="16" VerticalOptions="Center">
+
+        <Label Text="Echofy"
+               FontSize="36"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"
+               TextColor="#512BD4" />
+
+        <Label Text="Product Scanner"
+               FontSize="16"
+               HorizontalOptions="Center"
+               TextColor="Gray"
+               Margin="0,0,0,24" />
+
+        <Entry Placeholder="Email"
+               Text="{Binding Email}"
+               Keyboard="Email"
+               ReturnType="Next" />
+
+        <Entry Placeholder="Password"
+               Text="{Binding Password}"
+               IsPassword="True"
+               ReturnType="Done"
+               ReturnCommand="{Binding LoginCommand}" />
+
+        <Label Text="{Binding ErrorMessage}"
+               TextColor="Red"
+               IsVisible="{Binding HasError}"
+               FontSize="13" />
+
+        <Button Text="Sign In"
+                Command="{Binding LoginCommand}"
+                IsEnabled="{Binding IsNotBusy}"
+                BackgroundColor="#512BD4"
+                TextColor="White"
+                CornerRadius="8"
+                Margin="0,8,0,0" />
+
+        <ActivityIndicator IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           Color="#512BD4"
+                           HorizontalOptions="Center" />
+
+    </VerticalStackLayout>
+</ContentPage>

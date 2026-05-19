@@ -1,0 +1,82 @@
+@model Echofy.Web.Models.Admin.EditClientViewModel
+@{
+    ViewData["Title"] = "Add Client";
+    ViewData["ActivePage"] = "AdminClients";
+    Layout = "_Layout";
+}
+
+<div class="pb-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8 col-xl-6">
+            <div class="mb-4">
+                <h2 class="mb-0">Add Client</h2>
+                <p class="text-body-tertiary mb-0">Create a new organisation and configure module access</p>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="CreateClient" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 fs-9 mb-3" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label class="form-label" asp-for="Name">Name</label>
+                            <input class="form-control" asp-for="Name" autofocus />
+                            <span class="text-danger fs-9" asp-validation-for="Name"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label" asp-for="Slug">Slug</label>
+                            <input class="form-control" asp-for="Slug" placeholder="e.g. acme-corp" />
+                            <div class="form-text">URL-friendly identifier, lowercase with hyphens.</div>
+                        </div>
+                        <h6 class="mb-3">Module Access</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="HasECommerce" role="switch" />
+                                    <label class="form-check-label" asp-for="HasECommerce">E-Commerce</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="HasCrm" role="switch" />
+                                    <label class="form-check-label" asp-for="HasCrm">CRM</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="HasKanban" role="switch" />
+                                    <label class="form-check-label" asp-for="HasKanban">Kanban</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="HasCalendar" role="switch" />
+                                    <label class="form-check-label" asp-for="HasCalendar">Calendar</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="HasChat" role="switch" />
+                                    <label class="form-check-label" asp-for="HasChat">Chat</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="IsActive" role="switch" />
+                                    <label class="form-check-label" asp-for="IsActive">Active</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Create Client</button>
+                            <a asp-action="Clients" class="btn btn-phoenix-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

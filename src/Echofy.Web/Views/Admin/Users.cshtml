@@ -1,0 +1,54 @@
+@model List<Echofy.Web.Models.Admin.UserListItemViewModel>
+@{
+    ViewData["Title"] = "Users";
+    ViewData["ActivePage"] = "AdminUsers";
+    Layout = "_Layout";
+}
+
+<div class="pb-5">
+    <div class="row g-4 g-xl-6">
+        <div class="col-12">
+            <div class="mb-4 d-flex align-items-center justify-content-between">
+                <h2 class="mb-0">Users</h2>
+                <a asp-action="CreateUser" class="btn btn-primary btn-sm">
+                    <span class="fas fa-plus me-1"></span>Add User
+                </a>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm fs-9 mb-0 datatable"
+                               data-column-defs='[{"orderable":false,"targets":-1}]'>
+                            <thead>
+                                <tr>
+                                    <th class="align-middle">Name</th>
+                                    <th class="align-middle">Email</th>
+                                    <th class="align-middle">Role</th>
+                                    <th class="align-middle">Client</th>
+                                    <th class="align-middle"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model)
+                                {
+                                    <tr>
+                                        <td class="align-middle fw-semibold">@user.FullName</td>
+                                        <td class="align-middle">@user.Email</td>
+                                        <td class="align-middle">
+                                            <span class="badge badge-phoenix badge-phoenix-primary">@user.Role</span>
+                                        </td>
+                                        <td class="align-middle">@user.ClientName</td>
+                                        <td class="align-middle text-end">
+                                            <a asp-action="EditUser" asp-route-id="@user.Id"
+                                               class="btn btn-phoenix-secondary btn-sm">Edit</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

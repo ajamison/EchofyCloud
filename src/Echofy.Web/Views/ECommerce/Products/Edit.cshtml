@@ -1,0 +1,523 @@
+@model Echofy.Application.DTOs.ProductDto
+@using Echofy.Domain.Enums
+@{
+    ViewData["Title"] = "Edit Product";
+    ViewData["ActivePage"] = "Products";
+    Layout = "_Layout";
+}
+
+<div class="row g-3 mb-4 align-items-center">
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-phoenix-secondary btn-sm">
+            <span class="fas fa-arrow-left me-2"></span>Back to Products
+        </a>
+    </div>
+    <div class="col-auto"><h2 class="mb-0">@Model.Name</h2></div>
+    @if (Model.ActiveOffer is not null)
+    {
+        <div class="col-auto">
+            <span class="badge badge-phoenix badge-phoenix-warning fs-9">
+                <span class="fas fa-tag me-1"></span>Active offer: @Model.ActiveOffer.Name
+            </span>
+        </div>
+    }
+</div>
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    <div class="row g-4">
+
+        @* ── Left: main fields ── *@
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Product Information</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" asp-for="Name">Product Name <span class="text-danger">*</span></label>
+                            <input class="form-control" asp-for="Name" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Categories</label>
+                            <div class="d-flex flex-wrap gap-3 pt-1">
+                                @if (ViewBag.Categories != null)
+                                {
+                                    foreach (var cat in ViewBag.Categories)
+                                    {
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox"
+                                                   name="CategoryIds" value="@cat.Id" id="cat_@cat.Id"
+                                                   @(Model.CategoryIds.Contains((int)cat.Id) ? "checked" : "") />
+                                            <label class="form-check-label" for="cat_@cat.Id">@cat.Name</label>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-body-tertiary fs-9">No categories yet — add them in Admin › Categories.</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Sku">SKU</label>
+                            <input class="form-control" asp-for="Sku" placeholder="e.g. WH-PRO-001" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="ManufacturerUpc">Manufacturer UPC</label>
+                            <input class="form-control" asp-for="ManufacturerUpc" placeholder="e.g. 012345678905" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="ImageUrl">Image URL</label>
+                            <input class="form-control" asp-for="ImageUrl" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Size">Size</label>
+                            <input class="form-control" asp-for="Size" placeholder="e.g. 20" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="ManufacturerId">Manufacturer</label>
+                            <select class="form-select" asp-for="ManufacturerId" asp-items="ViewBag.Manufacturers"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="UnitOfMeasureId">Unit of Measure</label>
+                            <select class="form-select" asp-for="UnitOfMeasureId" asp-items="ViewBag.UnitsOfMeasure"></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" asp-for="Description">Description</label>
+                            <textarea class="form-control" asp-for="Description" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Price History ── *@
+            @if (Model.PriceHistory.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5 class="mb-0">Price History</h5>
+                        <span class="badge badge-phoenix badge-phoenix-primary fs-10">@Model.PriceHistory.Count entries</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm fs-9 mb-0 datatable" data-paging="false">
+                                <thead>
+                                    <tr>
+                                        <th class="align-middle">Price</th>
+                                        <th class="align-middle">Effective From</th>
+                                        <th class="align-middle">Effective To</th>
+                                        <th class="align-middle">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var h in Model.PriceHistory)
+                                    {
+                                        <tr>
+                                            <td class="align-middle fw-semibold">$@h.Price.ToString("N2")</td>
+                                            <td class="align-middle text-body-tertiary fs-10">@h.EffectiveFrom.ToString("dd MMM yyyy HH:mm")</td>
+                                            <td class="align-middle text-body-tertiary fs-10">
+                                                @(h.EffectiveTo.HasValue ? h.EffectiveTo.Value.ToString("dd MMM yyyy HH:mm") : "—")
+                                            </td>
+                                            <td class="align-middle">
+                                                @if (h.IsCurrent)
+                                                {
+                                                    <span class="badge badge-phoenix badge-phoenix-success fs-10">Current</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Superseded</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @* ── Discount Offers ── *@
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">Discount Offers</h5>
+                    <a asp-action="CreateOffer" asp-route-productId="@Model.Id"
+                       class="btn btn-primary btn-sm">
+                        <span class="fas fa-plus me-1"></span>Add Offer
+                    </a>
+                </div>
+                @if (Model.DiscountOffers.Any())
+                {
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm fs-9 mb-0 datatable" data-paging="false"
+                                   data-column-defs='[{"orderable":false,"targets":-1}]'>
+                                <thead>
+                                    <tr>
+                                        <th class="align-middle">Name</th>
+                                        <th class="align-middle">Discount</th>
+                                        <th class="align-middle">Start</th>
+                                        <th class="align-middle">End</th>
+                                        <th class="align-middle">Status</th>
+                                        <th class="align-middle"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var offer in Model.DiscountOffers)
+                                    {
+                                        <tr>
+                                            <td class="align-middle fw-semibold">@offer.Name</td>
+                                            <td class="align-middle">
+                                                @if (offer.DiscountType == DiscountType.Percentage)
+                                                {
+                                                    <span>@offer.DiscountValue.ToString("N0")% off</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>$@offer.DiscountValue.ToString("N2") off</span>
+                                                }
+                                            </td>
+                                            <td class="align-middle text-body-tertiary fs-10">@offer.StartDate.ToString("dd MMM yyyy")</td>
+                                            <td class="align-middle text-body-tertiary fs-10">@offer.EndDate.ToString("dd MMM yyyy")</td>
+                                            <td class="align-middle">
+                                                @if (!offer.IsActive)
+                                                {
+                                                    <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Inactive</span>
+                                                }
+                                                else if (offer.IsCurrentlyRunning)
+                                                {
+                                                    <span class="badge badge-phoenix badge-phoenix-success fs-10">Live</span>
+                                                }
+                                                else if (offer.StartDate > DateTime.UtcNow)
+                                                {
+                                                    <span class="badge badge-phoenix badge-phoenix-info fs-10">Scheduled</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Expired</span>
+                                                }
+                                            </td>
+                                            <td class="align-middle text-end">
+                                                <a asp-action="EditOffer" asp-route-productId="@Model.Id"
+                                                   asp-route-offerId="@offer.Id"
+                                                   class="btn btn-phoenix-secondary btn-sm">Edit</a>
+                                                <form asp-action="DeleteOffer" asp-route-productId="@Model.Id"
+                                                      asp-route-offerId="@offer.Id"
+                                                      method="post" class="d-inline"
+                                                      onsubmit="return confirm('Delete this offer?')">
+                                                    <button type="submit" class="btn btn-phoenix-danger btn-sm">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-body">
+                        <p class="text-body-tertiary mb-0 fs-9">No discount offers yet. Add one above.</p>
+                    </div>
+                }
+            </div>
+
+            @* ── Images ── *@
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">Images</h5>
+                    <span class="badge badge-phoenix badge-phoenix-primary fs-10">@Model.Images.Count uploaded</span>
+                </div>
+                <div class="card-body">
+                    @if (Model.Images.Any())
+                    {
+                        <div class="row g-3 mb-3">
+                            @foreach (var img in Model.Images)
+                            {
+                                <div class="col-6 col-md-4 col-lg-3">
+                                    <div class="card border @(img.IsMain ? "border-primary" : "") h-100">
+                                        <img src="@img.Url" alt="@(img.AltText ?? Model.Name)"
+                                             class="card-img-top"
+                                             style="height: 120px; object-fit: cover;" />
+                                        <div class="card-body p-2 text-center">
+                                            @if (img.IsMain)
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-primary fs-10 mb-1">Main</span>
+                                            }
+                                            else
+                                            {
+                                                <form asp-action="SetMainImage" asp-route-id="@Model.Id"
+                                                      method="post" class="d-inline mb-1">
+                                                    <input type="hidden" name="imageId" value="@img.Id" />
+                                                    <button type="submit" class="btn btn-phoenix-secondary btn-sm py-0 px-1 fs-10">Set Main</button>
+                                                </form>
+                                            }
+                                            <form asp-action="DeleteImage" asp-route-id="@Model.Id"
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this image?')">
+                                                <input type="hidden" name="imageId" value="@img.Id" />
+                                                <button type="submit" class="btn btn-phoenix-danger btn-sm py-0 px-1 fs-10">
+                                                    <span class="fas fa-trash"></span>
+                                                </button>
+                                            </form>
+                                            @if (!string.IsNullOrEmpty(img.Sku))
+                                            {
+                                                <div class="fs-10 text-body-tertiary mt-1 text-truncate" title="SKU: @img.Sku">
+                                                    <span class="fas fa-barcode me-1"></span>@img.Sku
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <form asp-action="UploadImage" asp-route-id="@Model.Id"
+                          method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-6">
+                                <label class="form-label fs-9">Upload New Image</label>
+                                <input type="file" name="file" class="form-control form-control-sm"
+                                       accept=".jpg,.jpeg,.png,.webp,.gif" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fs-9">Alt Text</label>
+                                <input type="text" name="altText" class="form-control form-control-sm"
+                                       placeholder="Optional description" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fs-9">SKU</label>
+                                <input type="text" name="sku" class="form-control form-control-sm"
+                                       placeholder="e.g. WH-PRO-001" />
+                            </div>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <span class="fas fa-upload"></span>
+                                </button>
+                            </div>
+                        </div>
+                        @if (TempData["Error"] is string errMsg)
+                        {
+                            <div class="text-danger small mt-1">@errMsg</div>
+                        }
+                    </form>
+
+                    @* ── Image library: assign an existing image from another product ── *@
+                    @{
+                        var availableImgs = ViewBag.AvailableImages as IEnumerable<dynamic> ?? [];
+                        var availableList = availableImgs.ToList();
+                    }
+                    @if (availableList.Count > 0)
+                    {
+                        <hr class="mt-4 mb-3">
+                        <div>
+                            <button class="btn btn-phoenix-secondary btn-sm mb-3" type="button"
+                                    data-collapse-target="imageLibrary">
+                                <span class="fas fa-images me-1"></span>
+                                Use existing image (@availableList.Count available)
+                            </button>
+                            <div class="hidden" id="imageLibrary">
+                                <div class="row g-2">
+                                    @foreach (var img in availableList)
+                                    {
+                                        <div class="col-6 col-md-4 col-lg-3">
+                                            <div class="card h-100">
+                                                <img src="/uploads/images/@img.FileName"
+                                                     class="card-img-top"
+                                                     style="height: 100px; object-fit: cover;"
+                                                     alt="@(img.AltText ?? "Image")" />
+                                                <div class="card-body p-2">
+                                                    <form asp-action="AssignExistingImage" asp-route-id="@Model.Id" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="fileName" value="@img.FileName" />
+                                                        <input type="text" name="altText" class="form-control form-control-sm mb-1"
+                                                               placeholder="Alt text" value="@img.AltText" />
+                                                        <input type="text" name="sku" class="form-control form-control-sm mb-1"
+                                                               placeholder="SKU (optional)" />
+                                                        <button type="submit" class="btn btn-phoenix-primary btn-sm w-100 fs-10">
+                                                            <span class="fas fa-link me-1"></span>Assign
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* ── Right: pricing, stock, client, status ── *@
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Pricing &amp; Stock</h5></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Price">Price ($) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input class="form-control" asp-for="Price" type="number" step="0.01" min="0" />
+                        </div>
+                        @if (Model.ActiveOffer is not null)
+                        {
+                            <div class="form-text text-success">
+                                <span class="fas fa-tag me-1"></span>
+                                Effective: $@Model.EffectivePrice.ToString("N2") after active offer
+                            </div>
+                        }
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="StockQuantity">Stock Quantity</label>
+                        <input class="form-control" asp-for="StockQuantity" type="number" min="0" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="CompanyId">Company</label>
+                        <select class="form-select" asp-for="CompanyId" asp-items="ViewBag.Companies"></select>
+                    </div>
+                    <div class="mb-1">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" asp-for="IsActive" type="checkbox" role="switch" />
+                            <label class="form-check-label fw-semibold" asp-for="IsActive">Active</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Info</h5></div>
+                <div class="card-body fs-9">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-body-tertiary">Created</span>
+                        <span>@Model.CreatedAt.ToString("dd MMM yyyy")</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.CompanyName))
+                    {
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-body-tertiary">Company</span>
+                            <span>@Model.CompanyName</span>
+                        </div>
+                    }
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-body-tertiary">Price changes</span>
+                        <span>@Model.PriceHistory.Count</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.ShortId))
+                    {
+                        <div class="d-flex justify-content-between">
+                            <span class="text-body-tertiary">Short ID</span>
+                            <code class="fs-10">@Model.ShortId</code>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* QR Code *@
+            @if (!string.IsNullOrEmpty(Model.ShortId))
+            {
+                <div class="card mb-4">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5 class="mb-0">QR Code</h5>
+                        <a href="/p/@Model.ShortId" target="_blank" class="btn btn-phoenix-secondary btn-sm">
+                            <span class="fas fa-external-link-alt me-1"></span>Public Page
+                        </a>
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="@Url.Action("QrCode", new { id = Model.Id })"
+                             alt="QR Code for @Model.Name"
+                             class="img-fluid"
+                             style="max-width: 180px;" />
+                        <div class="mt-2">
+                            <a href="@Url.Action("QrCode", new { id = Model.Id })"
+                               download="@(Model.ShortId)-qr.svg"
+                               class="btn btn-phoenix-secondary btn-sm">
+                                <span class="fas fa-download me-1"></span>Download SVG
+                            </a>
+                        </div>
+                        <div class="text-body-tertiary fs-10 mt-2">
+                            Scan to open: <code>/p/@Model.ShortId</code>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @* ── Additional QR Codes ── *@
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">Additional QR Codes</h5>
+                    <span class="badge badge-phoenix badge-phoenix-primary fs-10">@Model.AdditionalShortIds.Count alias@(Model.AdditionalShortIds.Count == 1 ? "" : "es")</span>
+                </div>
+                <div class="card-body">
+                    @if (Model.AdditionalShortIds.Any())
+                    {
+                        @foreach (var sid in Model.AdditionalShortIds)
+                        {
+                            <div class="border rounded p-2 mb-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div>
+                                        @if (!string.IsNullOrEmpty(sid.Label))
+                                        {
+                                            <span class="fw-semibold fs-9">@sid.Label</span>
+                                            <br />
+                                        }
+                                        <code class="fs-10 text-body-tertiary">@sid.Code</code>
+                                    </div>
+                                    <form asp-action="DeleteShortId" asp-route-id="@Model.Id" method="post"
+                                          onsubmit="return confirm('Delete this QR code alias?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="shortIdId" value="@sid.Id" />
+                                        <button type="submit" class="btn btn-phoenix-danger btn-sm py-0 px-1">
+                                            <span class="fas fa-trash fs-10"></span>
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="text-center">
+                                    <img src="@Url.Action("QrCode", new { id = Model.Id, code = sid.Code })"
+                                         alt="QR @sid.Code" class="img-fluid mb-1" style="max-width:120px;" />
+                                    <div>
+                                        <a href="@Url.Action("QrCode", new { id = Model.Id, code = sid.Code })"
+                                           download="@(sid.Code)-qr.svg"
+                                           class="btn btn-phoenix-secondary btn-sm py-0 px-2 fs-10">
+                                            <span class="fas fa-download me-1"></span>SVG
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    <form asp-action="GenerateShortId" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="row g-2 align-items-end">
+                            <div class="col">
+                                <label class="form-label fs-10 mb-1">Label (optional)</label>
+                                <input type="text" name="label" class="form-control form-control-sm"
+                                       placeholder="e.g. Shelf Label" maxlength="100" />
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-phoenix-primary btn-sm">
+                                    <span class="fas fa-qrcode me-1"></span>Generate
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" type="submit">
+                    <span class="fas fa-save me-2"></span>Save Changes
+                </button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-phoenix-secondary">View Details</a>
+                <a asp-action="Index" class="btn btn-phoenix-secondary">Cancel</a>
+            </div>
+        </div>
+
+    </div>
+</form>

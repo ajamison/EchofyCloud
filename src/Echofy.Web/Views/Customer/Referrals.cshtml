@@ -1,0 +1,325 @@
+@using Echofy.Application.DTOs
+@model ReferralDto
+@{
+    ViewData["Title"] = "My Referrals";
+    ViewData["ActivePage"] = "CustomerReferrals";
+    Layout = "_Layout";
+
+    var mailtoHref = $"mailto:?subject={Uri.EscapeDataString("You're invited — get $5 off!")}&body={Uri.EscapeDataString(Model.ShareText)}";
+    var smsHref    = $"sms:?body={Uri.EscapeDataString(Model.ShareText)}";
+
+    var pendingRewards = Model.Rewards.Where(r => r.Status == "Pending").ToList();
+}
+
+<div class="row g-3 mb-4 align-items-center">
+    <div class="col-auto"><h2 class="mb-0">My Referrals</h2></div>
+</div>
+
+@* Pending rewards notification *@
+@if (pendingRewards.Count > 0)
+{
+    <div class="alert alert-info mb-4" role="alert">
+        <span class="fas fa-star me-2"></span>
+        You have <strong>@pendingRewards.Count</strong> pending reward@(pendingRewards.Count != 1 ? "s" : "") totalling <strong>@pendingRewards.Sum(r => r.PointsEarned) points</strong> awaiting approval.
+    </div>
+}
+
+@* Stats row *@
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="bg-primary-subtle rounded-3 p-3">
+                    <span class="fas fa-users text-primary fs-4"></span>
+                </div>
+                <div>
+                    <div class="text-body-tertiary fs-9">Total Referrals</div>
+                    <div class="fw-bold fs-4">@Model.TotalReferrals</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="bg-success-subtle rounded-3 p-3">
+                    <span class="fas fa-dollar-sign text-success fs-4"></span>
+                </div>
+                <div>
+                    <div class="text-body-tertiary fs-9">Total Earned</div>
+                    <div class="fw-bold fs-4">@Model.TotalPoints pts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="bg-warning-subtle rounded-3 p-3">
+                    <span class="fas fa-clock text-warning fs-4"></span>
+                </div>
+                <div>
+                    <div class="text-body-tertiary fs-9">Pending Rewards</div>
+                    <div class="fw-bold fs-4">@Model.PendingPoints pts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="bg-warning-subtle rounded-3 p-3">
+                    <span class="fas fa-gift text-warning fs-4"></span>
+                </div>
+                <div>
+                    <div class="text-body-tertiary fs-9">Pending Rewards</div>
+                    <div class="fw-bold fs-4">@pendingRewards.Count</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Referral Code + Share Card *@
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><span class="fas fa-gift me-2 text-primary"></span>Your Referral Code</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-body-secondary mb-3">
+            Share your unique code. When someone signs up with it they get <strong>$5 off their first order</strong>,
+            and you earn a <strong>$10 gift card</strong> once approved.
+        </p>
+
+        @* Code display *@
+        <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+            <div class="border border-2 border-primary rounded-3 px-4 py-3 bg-primary-subtle">
+                <span id="referral-code" class="fw-bold fs-3 text-primary">@Model.Code</span>
+            </div>
+            <button class="btn btn-outline-primary" type="button" onclick="copyCode()" id="copy-btn">
+                <span class="fas fa-copy me-1"></span>Copy Code
+            </button>
+        </div>
+
+        @* Share link *@
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Referral Link</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="share-url" value="@Model.ShareUrl" readonly>
+                <button class="btn btn-outline-secondary" type="button" onclick="copyLink()">
+                    <span class="fas fa-link me-1"></span>Copy Link
+                </button>
+            </div>
+        </div>
+
+        @* Share buttons *@
+        <div class="d-flex flex-wrap gap-2">
+            <a href="@mailtoHref" class="btn btn-primary">
+                <span class="fas fa-envelope me-2"></span>Share via Email
+            </a>
+            <a href="@smsHref" class="btn btn-success">
+                <span class="fas fa-comment-sms me-2"></span>Share via Text / SMS
+            </a>
+            <button class="btn btn-outline-secondary" type="button" onclick="copyShareText()">
+                <span class="fas fa-copy me-1"></span>Copy Message
+            </button>
+        </div>
+
+        <textarea id="share-text" class="d-none">@Model.ShareText</textarea>
+    </div>
+</div>
+
+@* How It Works *@
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><span class="fas fa-circle-question me-2 text-primary"></span>How It Works</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-4 text-center">
+                <div class="bg-primary-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;">
+                    <span class="fas fa-share-nodes text-primary fs-5"></span>
+                </div>
+                <h6 class="fw-semibold">1. Share Your Code</h6>
+                <p class="text-body-secondary fs-9 mb-0">Send your referral link via email or text. Your contact gets $5 off their first order just for signing up.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="bg-success-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;">
+                    <span class="fas fa-user-plus text-success fs-5"></span>
+                </div>
+                <h6 class="fw-semibold">2. They Sign Up &amp; Save</h6>
+                <p class="text-body-secondary fs-9 mb-0">Your contact registers using your code and instantly receives a $5 discount coupon for their first purchase.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="bg-warning-subtle rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;">
+                    <span class="fas fa-gift text-warning fs-5"></span>
+                </div>
+                <h6 class="fw-semibold">3. You Get a Gift Card</h6>
+                <p class="text-body-secondary fs-9 mb-0">Once our team approves the referral, you receive a $10 gift card redeemable on any future order.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Activity table *@
+@if (Model.RecentUses.Count > 0)
+{
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Referral Activity</h5>
+            <span class="badge bg-primary rounded-pill">@Model.TotalReferrals total</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Contact</th>
+                        <th>Signed Up</th>
+                        <th>Their Discount</th>
+                        <th>Your Reward</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var use in Model.RecentUses)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@use.UsedByEmail</td>
+                            <td class="text-body-secondary">@use.UsedAt.ToLocalTime().ToString("MMM d, yyyy")</td>
+                            <td>
+                                @if (use.WelcomeCouponCode is not null)
+                                {
+                                    <code class="text-success">@use.WelcomeCouponCode</code>
+                                }
+                                else
+                                {
+                                    <span class="text-body-tertiary">—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (use.HasReward)
+                                {
+                                    var badgeClass = use.RewardStatus switch
+                                    {
+                                        "Issued"    => "bg-success",
+                                        "Approved"  => "bg-info",
+                                        "Cancelled" => "bg-danger",
+                                        _           => "bg-warning text-dark"
+                                    };
+                                    <span class="badge @badgeClass">@use.RewardStatus</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Processing</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-body text-center py-5">
+            <span class="fas fa-paper-plane fa-3x text-body-tertiary mb-3 d-block"></span>
+            <h5 class="text-body-tertiary">No referrals yet</h5>
+            <p class="text-body-secondary fs-9 mb-3">Start sharing — your contacts get $5 off and you earn a $10 gift card!</p>
+            <a href="@mailtoHref" class="btn btn-primary btn-sm me-2">
+                <span class="fas fa-envelope me-1"></span>Send an Email Invite
+            </a>
+            <a href="@smsHref" class="btn btn-success btn-sm">
+                <span class="fas fa-comment-sms me-1"></span>Send a Text
+            </a>
+        </div>
+    </div>
+}
+
+@* Gift cards / rewards history *@
+@if (Model.Rewards.Count > 0)
+{
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Gift Cards &amp; Rewards</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Amount</th>
+                        <th>Gift Card Code</th>
+                        <th>Status</th>
+                        <th>Earned</th>
+                        <th>Issued</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.Rewards)
+                    {
+                        var badgeClass = r.Status switch
+                        {
+                            "Issued"    => "bg-success",
+                            "Approved"  => "bg-info",
+                            "Cancelled" => "bg-danger",
+                            _           => "bg-warning text-dark"
+                        };
+                        <tr>
+                            <td class="fw-bold text-success">@r.PointsEarned pts</td>
+                            <td>
+                                <span class="text-body-tertiary">—</span>
+                            </td>
+                            <td><span class="badge @badgeClass">@r.Status</span></td>
+                            <td class="text-body-secondary">@r.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</td>
+                            <td class="text-body-secondary">@(r.IssuedAt.HasValue ? r.IssuedAt.Value.ToLocalTime().ToString("MMM d, yyyy") : "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function copyCode() {
+            const code = document.getElementById('referral-code').textContent.trim();
+            navigator.clipboard.writeText(code).then(() => showCopied('copy-btn', 'btn-outline-primary', 'btn-success', 'Code Copied!', '<span class="fas fa-copy me-1"></span>Copy Code'));
+        }
+
+        function copyLink() {
+            const link = document.getElementById('share-url').value;
+            const btn = event.target.closest('button');
+            navigator.clipboard.writeText(link).then(() => flash(btn, 'btn-outline-secondary', 'btn-success', '<span class="fas fa-check me-1"></span>Copied!'));
+        }
+
+        function copyShareText() {
+            const text = document.getElementById('share-text').value;
+            const btn = event.target.closest('button');
+            navigator.clipboard.writeText(text).then(() => flash(btn, 'btn-outline-secondary', 'btn-success', '<span class="fas fa-check me-1"></span>Message Copied!'));
+        }
+
+        function copyGiftCard(code, btnId) {
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById(btnId);
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<span class="fas fa-check"></span>';
+                setTimeout(() => btn.innerHTML = orig, 2000);
+            });
+        }
+
+        function showCopied(btnId, fromClass, toClass, label, resetLabel) {
+            const btn = document.getElementById(btnId);
+            btn.innerHTML = `<span class="fas fa-check me-1"></span>${label}`;
+            btn.classList.replace(fromClass, toClass);
+            setTimeout(() => { btn.innerHTML = resetLabel; btn.classList.replace(toClass, fromClass); }, 2000);
+        }
+
+        function flash(btn, fromClass, toClass, label) {
+            const orig = btn.innerHTML;
+            btn.innerHTML = label;
+            btn.classList.replace(fromClass, toClass);
+            setTimeout(() => { btn.innerHTML = orig; btn.classList.replace(toClass, fromClass); }, 2000);
+        }
+    </script>
+}

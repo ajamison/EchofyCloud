@@ -1,0 +1,75 @@
+@model Echofy.Application.DTOs.CrmAnalyticsDto
+@{
+    ViewData["Title"] = "CRM Dashboard";
+}
+
+<div class="mb-6">
+    <h2 class="mb-2">CRM Dashboard</h2>
+    <h5 class="text-body-tertiary fw-semibold">Pipeline and lead analytics overview</h5>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="mb-1">@Model.TotalLeads</h3>
+                <p class="text-body-tertiary mb-0">Total Leads</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="mb-1">@Model.TotalDeals</h3>
+                <p class="text-body-tertiary mb-0">Total Deals</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="mb-1">$@Model.TotalPipelineValue.ToString("N0")</h3>
+                <p class="text-body-tertiary mb-0">Pipeline Value</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="mb-1">@Model.ConversionRate%</h3>
+                <p class="text-body-tertiary mb-0">Conversion Rate</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Deals by Stage</h5></div>
+            <div class="card-body">
+                @foreach (var stage in Model.DealsByStage)
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fs-9">@stage.Key</span>
+                        <span class="badge badge-phoenix badge-phoenix-primary">@stage.Value</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Leads by Status</h5></div>
+            <div class="card-body">
+                @foreach (var status in Model.LeadsByStatus)
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fs-9">@status.Key</span>
+                        <span class="badge badge-phoenix badge-phoenix-info">@status.Value</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

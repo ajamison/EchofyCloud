@@ -1,0 +1,41 @@
+@model IReadOnlyList<Echofy.Application.DTOs.ContactDto>
+@{
+    ViewData["Title"] = "Contacts";
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-auto"><h2 class="mb-0">Contacts</h2></div>
+    <div class="col-auto ms-auto">
+        <a asp-action="Create" class="btn btn-primary btn-sm"><span class="fas fa-plus me-2"></span>Add Contact</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm fs-9 mb-0 datatable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Company</th>
+                        <th>Added</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@c.FullName</td>
+                            <td>@c.Email</td>
+                            <td>@(c.Phone ?? "-")</td>
+                            <td>@(c.Company ?? "-")</td>
+                            <td data-order="@c.CreatedAt.ToString("yyyy-MM-dd")">@c.CreatedAt.ToString("MMM d, yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,85 @@
+@model Echofy.Application.DTOs.CompanyDto
+@{
+    ViewData["Title"] = "Add Company";
+    ViewData["ActivePage"] = "AdminCompanies";
+    Layout = "_Layout";
+}
+
+<div class="row g-3 mb-4 align-items-center">
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-phoenix-secondary btn-sm">
+            <span class="fas fa-arrow-left me-2"></span>Back to Companies
+        </a>
+    </div>
+    <div class="col-auto"><h2 class="mb-0">Add Company</h2></div>
+</div>
+
+<form asp-action="Create" method="post">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Company Details</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Name">Name <span class="text-danger">*</span></label>
+                            <input class="form-control" asp-for="Name" placeholder="e.g. Acme Supplies Ltd" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="ClientId">Client <span class="text-danger">*</span></label>
+                            <select class="form-select" asp-for="ClientId" asp-items="ViewBag.Clients"></select>
+                            <span asp-validation-for="ClientId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Email">Email</label>
+                            <input class="form-control" asp-for="Email" type="email" placeholder="contact@company.com" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Phone">Phone</label>
+                            <input class="form-control" asp-for="Phone" placeholder="+1 555 000 0000" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Website">Website</label>
+                            <input class="form-control" asp-for="Website" placeholder="https://company.com" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="TaxNumber">Tax Number</label>
+                            <input class="form-control" asp-for="TaxNumber" placeholder="e.g. GB123456789" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" asp-for="Address">Address</label>
+                            <input class="form-control" asp-for="Address" placeholder="Street address" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="City">City</label>
+                            <input class="form-control" asp-for="City" placeholder="e.g. London" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Country">Country</label>
+                            <input class="form-control" asp-for="Country" placeholder="e.g. United Kingdom" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Status</h5></div>
+                <div class="card-body">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" asp-for="IsActive" type="checkbox" role="switch" />
+                        <label class="form-check-label fw-semibold" asp-for="IsActive">Active</label>
+                    </div>
+                </div>
+            </div>
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" type="submit">
+                    <span class="fas fa-save me-2"></span>Save Company
+                </button>
+                <a asp-action="Index" class="btn btn-phoenix-secondary">Cancel</a>
+            </div>
+        </div>
+    </div>
+</form>

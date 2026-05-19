@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:Echofy.MobileApp.Views"
+       x:Class="Echofy.MobileApp.AppShell"
+       Shell.NavBarIsVisible="True">
+
+    <!-- LoginPage: shown at app start, no nav bar -->
+    <ShellContent Title="Login"
+                  ContentTemplate="{DataTemplate views:LoginPage}"
+                  Route="LoginPage"
+                  Shell.NavBarIsVisible="False" />
+
+    <!-- ScanPage: navigated to after login via //ScanPage; must be in visual hierarchy -->
+    <ShellContent Title="Scan"
+                  ContentTemplate="{DataTemplate views:ScanPage}"
+                  Route="ScanPage"
+                  Shell.NavBarIsVisible="False" />
+
+</Shell>

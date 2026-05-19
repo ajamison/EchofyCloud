@@ -1,0 +1,57 @@
+@model IReadOnlyList<Echofy.Application.DTOs.DealDto>
+@{
+    ViewData["Title"] = "Deals";
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-auto"><h2 class="mb-0">Deals</h2></div>
+    <div class="col-auto ms-auto">
+        <a asp-action="Create" class="btn btn-primary btn-sm"><span class="fas fa-plus me-2"></span>Add Deal</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm fs-9 mb-0 datatable"
+                   data-column-defs='[{"orderable":false,"targets":-1}]'>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Lead</th>
+                        <th>Value</th>
+                        <th>Stage</th>
+                        <th>Close Date</th>
+                        <th>Created</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model)
+                    {
+                        <tr>
+                            <td><a asp-action="Details" asp-route-id="@d.Id" class="fw-semibold">@d.Title</a></td>
+                            <td>@d.LeadName</td>
+                            <td data-order="@d.Value">$@d.Value.ToString("N0")</td>
+                            <td>
+                                @{
+                                    var stageClass = d.Stage.ToString() switch {
+                                        "ClosedWon" => "success",
+                                        "ClosedLost" => "danger",
+                                        "Negotiation" => "warning",
+                                        "Proposal" => "primary",
+                                        _ => "info"
+                                    };
+                                }
+                                <span class="badge badge-phoenix badge-phoenix-@stageClass fs-10">@d.Stage</span>
+                            </td>
+                            <td data-order="@(d.ExpectedCloseDate?.ToString("yyyy-MM-dd") ?? "")">@(d.ExpectedCloseDate?.ToString("MMM d, yyyy") ?? "-")</td>
+                            <td data-order="@d.CreatedAt.ToString("yyyy-MM-dd")">@d.CreatedAt.ToString("MMM d, yyyy")</td>
+                            <td><a asp-action="Details" asp-route-id="@d.Id" class="btn btn-phoenix-secondary btn-sm">View</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

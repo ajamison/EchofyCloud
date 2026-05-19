@@ -1,0 +1,65 @@
+@model Echofy.Web.Models.Admin.CategoryViewModel
+@{
+    ViewData["Title"] = "Add Category";
+    ViewData["ActivePage"] = "AdminCategories";
+    Layout = "_Layout";
+}
+
+<div class="pb-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-7 col-xl-5">
+            <div class="mb-4">
+                <h2 class="mb-0">Add Category</h2>
+                <p class="text-body-tertiary mb-0">Create a new product category</p>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="CreateCategory" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 fs-9 mb-3" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label class="form-label" asp-for="Name">Name</label>
+                            <input class="form-control" asp-for="Name" autofocus id="catNameInput" />
+                            <span class="text-danger fs-9" asp-validation-for="Name"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" asp-for="Slug">Slug</label>
+                            <input class="form-control" asp-for="Slug" id="catSlugInput" placeholder="e.g. electronics" />
+                            <div class="form-text">URL-friendly identifier, auto-generated from name.</div>
+                            <span class="text-danger fs-9" asp-validation-for="Slug"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label" asp-for="Description">Description</label>
+                            <textarea class="form-control" asp-for="Description" rows="2"
+                                      placeholder="Optional description…"></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" asp-for="IsActive" role="switch" />
+                                <label class="form-check-label" asp-for="IsActive">Active</label>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Create Category</button>
+                            <a asp-action="Categories" class="btn btn-phoenix-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        // Auto-generate slug from name
+        document.getElementById('catNameInput')?.addEventListener('input', function () {
+            var slug = this.value.toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .trim().replace(/\s+/g, '-');
+            var s = document.getElementById('catSlugInput');
+            if (s) s.value = slug;
+        });
+    </script>
+}

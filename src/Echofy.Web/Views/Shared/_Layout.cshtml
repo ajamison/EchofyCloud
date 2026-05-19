@@ -1,0 +1,417 @@
+@using Echofy.Application.Interfaces
+@inject INavigationService NavSvc
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
+@{
+    var menu = NavSvc.GetMenu(User);
+    var activePage = ViewData["ActivePage"]?.ToString() ?? "";
+}
+<!DOCTYPE html>
+<html lang="en-US" class="h-full">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"] - Echofy</title>
+
+    <link rel="icon" type="image/svg+xml" href="~/assets/img/icons/logo.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="~/assets/img/favicons/apple-touch-icon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="~/assets/img/favicons/favicon.ico">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+    <link rel="stylesheet" href="~/css/tailwind.css">
+
+    @RenderSection("Styles", required: false)
+    @* Apply dark class before first paint to prevent flash *@
+    <script>(function(){if(localStorage.getItem('echofy_dark')==='1')document.documentElement.classList.add('dark');}());</script>
+</head>
+<body class="h-full font-sans text-gray-700 bg-gray-50 dark:bg-slate-900 dark:text-slate-200 transition-colors duration-200">
+
+    @* ── Mobile overlay ── *@
+    <div id="sidebarOverlay"
+         class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden"
+         onclick="closeSidebar()"></div>
+
+    @* ── Sidebar ── *@
+    <aside id="appSidebar"
+           class="fixed inset-y-0 left-0 flex flex-col bg-slate-900 text-slate-300 h-full z-40 lg:z-auto overflow-hidden"
+           style="width:256px;transition:width 0.2s ease;">
+
+        @* Logo row *@
+        <div class="flex items-center h-16 px-4 border-b border-slate-700 shrink-0 min-w-0">
+            <a asp-controller="Dashboard" asp-action="Index"
+               class="flex items-center gap-3 no-underline min-w-0">
+                <img src="~/assets/img/icons/logo.svg" alt="echofy"
+                     class="w-7 h-7 shrink-0">
+                <span class="text-white font-bold text-lg tracking-tight sidebar-text truncate">echofy</span>
+            </a>
+            <button onclick="closeSidebar()"
+                    class="ml-auto text-slate-400 hover:text-white lg:hidden shrink-0">
+                <span data-feather="x" class="w-5 h-5"></span>
+            </button>
+        </div>
+
+        @* Navigation *@
+        <nav class="flex-1 overflow-y-auto py-4 px-2">
+            @foreach (var group in menu)
+            {
+                var groupIsActive = group.Items.Any(i => i.ActivePage == activePage);
+                <div class="mb-0.5">
+                    <button onclick="toggleNavGroup('@group.CollapseId')"
+                            title="@group.Label"
+                            class="sidebar-group-btn w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold
+                                   text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+                        <span data-feather="@group.Icon" class="sidebar-icon w-4 h-4 shrink-0"></span>
+                        <span class="sidebar-text flex-1 text-left">@group.Label</span>
+                        <span class="fas fa-caret-right text-xs nav-caret transition-transform"
+                              id="caret-@group.CollapseId"></span>
+                    </button>
+                    <div id="@group.CollapseId"
+                         class="sidebar-sub-nav mt-0.5 ml-4 pl-3 border-l border-slate-700 @(groupIsActive ? "" : "hidden")">
+                        @foreach (var item in group.Items)
+                        {
+                            <a class="flex items-center px-3 py-1.5 rounded-md text-sm transition-colors
+                                      @(activePage == item.ActivePage
+                                          ? "text-white bg-indigo-600 font-semibold"
+                                          : "text-slate-400 hover:text-white hover:bg-slate-800")"
+                               asp-controller="@item.Controller" asp-action="@item.Action">
+                                @item.Text
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </nav>
+
+        @* Sidebar footer: user + collapse toggle *@
+        @{
+            var clientName = User.FindFirst("echofy:client:name")?.Value;
+            var fullName   = User.FindFirst("echofy:fullname")?.Value ?? User.Identity?.Name;
+        }
+        <div class="shrink-0 border-t border-slate-700">
+            @if (!string.IsNullOrEmpty(fullName))
+            {
+                <div class="sidebar-footer-info flex items-center gap-3 px-4 py-3 min-w-0">
+                    <img class="w-8 h-8 rounded-full shrink-0"
+                         src="~/assets/img/team/40x40/avatar.webp" alt="user">
+                    <div class="min-w-0 sidebar-text">
+                        <div class="text-white text-sm font-semibold truncate">@fullName</div>
+                        @if (!string.IsNullOrEmpty(clientName))
+                        {
+                            <div class="text-slate-400 text-xs truncate">@clientName</div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @* Collapse toggle (desktop only) *@
+            <button id="sidebarCollapseBtn" onclick="toggleSidebarCollapse()"
+                    class="hidden lg:flex w-full items-center gap-2 px-4 py-3
+                           text-slate-400 hover:text-white hover:bg-slate-800
+                           transition-colors text-sm border-t border-slate-700">
+                <span data-feather="chevrons-left" class="collapse-icon w-4 h-4 shrink-0 transition-transform"></span>
+                <span class="sidebar-text">Collapse</span>
+            </button>
+        </div>
+    </aside>
+
+    @* ── Main wrapper ── *@
+    <div id="mainWrapper" class="flex flex-col min-h-screen" style="padding-left:0;transition:padding-left 0.2s ease;">
+
+        @* ── Top bar ── *@
+        <header class="sticky top-0 z-20 flex items-center h-16 px-4 bg-white border-b border-gray-200 gap-4 dark:bg-slate-800 dark:border-slate-700">
+
+            @* Mobile hamburger *@
+            <button onclick="openSidebar()"
+                    class="lg:hidden text-gray-500 hover:text-gray-700">
+                <span data-feather="menu" class="w-5 h-5"></span>
+            </button>
+
+            @* Global search *@
+            <div class="hidden lg:block relative" style="width:320px;">
+                <span class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none z-10"></span>
+                <input id="navGlobalSearch" type="text"
+                       class="w-full pl-8 pr-4 py-1.5 text-sm border border-gray-200 rounded-full bg-gray-50
+                              focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300
+                              dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder-slate-400"
+                       placeholder="Search…" autocomplete="off" />
+                <div id="navSearchDrop"
+                     class="absolute top-full mt-1 left-0 right-0 z-50 bg-white rounded-lg shadow-lg border border-gray-200 hidden dark:bg-slate-800 dark:border-slate-700">
+                    <div id="navSearchResults" class="max-h-96 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            @* Right actions *@
+            <div class="ml-auto flex items-center gap-2">
+
+                @* Dark mode toggle *@
+                <button id="darkToggleBtn" onclick="toggleDark()"
+                        class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700"
+                        title="Toggle dark mode">
+                    <span id="darkIcon" data-feather="moon" class="w-5 h-5"></span>
+                </button>
+
+                @* Notification bell *@
+                <div class="relative group">
+                    <button class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700">
+                        <span data-feather="bell" class="w-5 h-5"></span>
+                    </button>
+                    <div class="absolute right-0 mt-1 w-72 bg-white rounded-lg shadow-lg border border-gray-200
+                                hidden group-focus-within:block dark:bg-slate-800 dark:border-slate-700">
+                        <div class="px-4 py-3 border-b border-gray-100 font-semibold text-sm dark:border-slate-700 dark:text-slate-200">Notifications</div>
+                        <div class="px-4 py-3 text-sm text-gray-400 dark:text-slate-500">No new notifications.</div>
+                    </div>
+                </div>
+
+                @* User menu *@
+                <div class="relative group">
+                    <button class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-gray-100
+                                   text-sm text-gray-700 font-semibold dark:text-slate-200 dark:hover:bg-slate-700">
+                        <img class="w-7 h-7 rounded-full"
+                             src="~/assets/img/team/40x40/avatar.webp" alt="user">
+                        <span class="hidden sm:block">@(fullName ?? "Account")</span>
+                        <span data-feather="chevron-down" class="w-4 h-4 text-gray-400 dark:text-slate-500"></span>
+                    </button>
+                    <div class="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200
+                                hidden group-focus-within:block dark:bg-slate-800 dark:border-slate-700">
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="py-1">
+                            <button type="submit"
+                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700">
+                                <span data-feather="log-out" class="inline w-4 h-4 mr-2"></span>Sign out
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        @* ── Page content ── *@
+        @{
+            var _version = System.Reflection.Assembly.GetEntryAssembly()
+                               ?.GetName().Version?.ToString(3) ?? "1.0.0";
+        }
+        <main class="flex-1 p-6 dark:bg-slate-900">
+            @RenderBody()
+        </main>
+
+        @* ── Footer ── *@
+        <footer class="px-6 py-4 border-t border-gray-200 bg-white flex flex-wrap items-center justify-between gap-2 text-xs text-gray-400 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-500">
+            <span>&copy; @DateTime.UtcNow.Year <strong class="font-semibold text-gray-600">Echofy</strong> — All rights reserved.</span>
+            <span class="flex items-center gap-2">
+                Release v@_version
+                @if (!Env.IsProduction())
+                {
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">@Env.EnvironmentName</span>
+                }
+            </span>
+        </footer>
+    </div>
+
+    @* ── Scripts ── *@
+    <script src="~/vendors/fontawesome/all.min.js"></script>
+    <script src="~/vendors/feather-icons/feather.min.js"></script>
+    <script src="~/vendors/echarts/echarts.min.js"></script>
+    <script src="~/vendors/datatables/jquery.min.js"></script>
+    <script src="~/vendors/datatables/dataTables.min.js"></script>
+    <script>
+        // ── Dark mode ─────────────────────────────────────────────
+        var DARK_KEY = 'echofy_dark';
+
+        function applyDarkIcon() {
+            var isDark = document.documentElement.classList.contains('dark');
+            var icon = document.getElementById('darkIcon');
+            if (!icon) return;
+            icon.setAttribute('data-feather', isDark ? 'sun' : 'moon');
+            if (typeof feather !== 'undefined') feather.replace({ width: '1em', height: '1em' });
+        }
+
+        function toggleDark() {
+            var isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem(DARK_KEY, isDark ? '1' : '0');
+            applyDarkIcon();
+        }
+
+        // ── Feather icons ──────────────────────────────────────────
+        if (typeof feather !== 'undefined') feather.replace({ width: '1em', height: '1em' });
+        applyDarkIcon();
+
+        // ── Sidebar collapse (desktop mini-rail) ──────────────────
+        var COLLAPSED_KEY = 'echofy_sidebar_collapsed';
+        var SIDEBAR_FULL  = 256;
+        var SIDEBAR_MINI  = 64;
+
+        function applySidebarCollapse(collapsed, animate) {
+            var sidebar = document.getElementById('appSidebar');
+            var wrapper = document.getElementById('mainWrapper');
+            if (!sidebar || !wrapper) return;
+
+            var width = collapsed ? SIDEBAR_MINI : SIDEBAR_FULL;
+            sidebar.style.width = width + 'px';
+
+            // Only apply left padding on lg+
+            if (window.innerWidth >= 992) {
+                wrapper.style.paddingLeft = width + 'px';
+            }
+
+            // Toggle text visibility
+            sidebar.querySelectorAll('.sidebar-text, .nav-caret, .sidebar-footer-info, .sidebar-sub-nav').forEach(function (el) {
+                el.style.display = collapsed ? 'none' : '';
+            });
+
+            // Center/left-align group buttons
+            sidebar.querySelectorAll('.sidebar-group-btn').forEach(function (btn) {
+                btn.style.justifyContent = collapsed ? 'center' : '';
+                btn.style.paddingLeft    = collapsed ? '0' : '';
+                btn.style.paddingRight   = collapsed ? '0' : '';
+            });
+
+            // Rotate collapse icon
+            var icon = document.querySelector('#sidebarCollapseBtn .collapse-icon');
+            if (icon) icon.style.transform = collapsed ? 'rotate(180deg)' : '';
+        }
+
+        function toggleSidebarCollapse() {
+            var collapsed = localStorage.getItem(COLLAPSED_KEY) === '1';
+            collapsed = !collapsed;
+            localStorage.setItem(COLLAPSED_KEY, collapsed ? '1' : '0');
+            applySidebarCollapse(collapsed);
+        }
+
+        // Restore persisted state on load (no animation flash)
+        (function () {
+            var collapsed = localStorage.getItem(COLLAPSED_KEY) === '1';
+            if (collapsed) applySidebarCollapse(true, false);
+            // Apply desktop padding unconditionally (sidebar is always shown on lg)
+            if (window.innerWidth >= 992) {
+                var w = collapsed ? SIDEBAR_MINI : SIDEBAR_FULL;
+                document.getElementById('mainWrapper').style.paddingLeft = w + 'px';
+            }
+        }());
+
+        // ── Mobile sidebar ─────────────────────────────────────────
+        function openSidebar() {
+            document.getElementById('appSidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.remove('hidden');
+        }
+        function closeSidebar() {
+            document.getElementById('appSidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.add('hidden');
+        }
+
+        // ── Nav group accordion ────────────────────────────────────
+        function toggleNavGroup(id) {
+            // Don't open accordion in collapsed (mini) mode
+            if (localStorage.getItem(COLLAPSED_KEY) === '1') return;
+            var el    = document.getElementById(id);
+            var caret = document.getElementById('caret-' + id);
+            if (!el) return;
+            var hidden = el.classList.toggle('hidden');
+            if (caret) caret.style.transform = hidden ? '' : 'rotate(90deg)';
+        }
+
+        // Initialise open carets for active groups
+        document.querySelectorAll('[id^="caret-"]').forEach(function (caret) {
+            var groupId = caret.id.replace('caret-', '');
+            var group   = document.getElementById(groupId);
+            if (group && !group.classList.contains('hidden')) {
+                caret.style.transform = 'rotate(90deg)';
+            }
+        });
+
+        // ── Collapse shim (data-collapse-target) ──────────────────
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-collapse-target]');
+            if (!btn) return;
+            var target = document.getElementById(btn.dataset.collapseTarget);
+            if (target) target.classList.toggle('hidden');
+        });
+
+        // ── DataTables ─────────────────────────────────────────────
+        (function () {
+            if (typeof DataTable === 'undefined') return;
+            document.querySelectorAll('table.datatable').forEach(function (el) {
+                try {
+                    var colDefs  = JSON.parse(el.getAttribute('data-column-defs') || '[]');
+                    var paging   = el.getAttribute('data-paging') !== 'false';
+                    new DataTable(el, {
+                        searching  : true,
+                        ordering   : true,
+                        paging     : paging,
+                        info       : paging,
+                        pageLength : parseInt(el.getAttribute('data-page-length') || '25'),
+                        lengthMenu : [[10, 25, 50, -1], ['10', '25', '50', 'All']],
+                        columnDefs : colDefs,
+                        language   : { searchPlaceholder: 'Search\u2026', search: '' },
+                        layout     : {
+                            topStart  : paging ? 'pageLength' : null,
+                            topEnd    : 'search',
+                            bottomStart: paging ? 'info'   : null,
+                            bottomEnd  : paging ? 'paging' : null
+                        }
+                    });
+                } catch (e) {
+                    console.error('DataTable init error:', e, el);
+                }
+            });
+        }());
+
+        // ── Global navbar search ───────────────────────────────────
+        (function () {
+            var inp  = document.getElementById('navGlobalSearch');
+            var drop = document.getElementById('navSearchDrop');
+            var res  = document.getElementById('navSearchResults');
+            if (!inp) return;
+            var timer;
+            inp.addEventListener('input', function () {
+                clearTimeout(timer);
+                var q = this.value.trim();
+                if (q.length < 2) { closeSearch(); return; }
+                timer = setTimeout(function () { runSearch(q); }, 250);
+            });
+            inp.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') { closeSearch(); inp.blur(); }
+            });
+            document.addEventListener('click', function (e) {
+                if (!inp.contains(e.target) && !drop.contains(e.target)) closeSearch();
+            });
+            function closeSearch() { drop.classList.add('hidden'); }
+            function escHtml(s) {
+                return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+            function highlight(text, q) {
+                var rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                return escHtml(text).replace(rx, function (m) { return '<mark class="p-0">' + m + '</mark>'; });
+            }
+            function runSearch(q) {
+                fetch('/search?q=' + encodeURIComponent(q))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data.groups || !data.groups.length) {
+                            res.innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-3 mb-0">No results</p>';
+                        } else {
+                            res.innerHTML = data.groups.map(function (g, i) {
+                                var header = '<div class="px-3 pt-2 pb-1">'
+                                    + '<span class="uppercase font-bold text-[10px] text-gray-400 dark:text-slate-500">'
+                                    + escHtml(g.label) + '</span></div>';
+                                var items = g.items.map(function (item) {
+                                    return '<a href="' + escHtml(item.url || '#') + '" class="flex flex-col px-3 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">'
+                                        + '<span class="font-semibold text-sm text-gray-800 dark:text-slate-200">' + highlight(item.text, q) + '</span>'
+                                        + (item.sub ? '<span class="text-xs text-gray-400 dark:text-slate-500 truncate">' + escHtml(item.sub) + '</span>' : '')
+                                        + '</a>';
+                                }).join('');
+                                var divider = i < data.groups.length - 1 ? '<hr class="my-1 border-gray-100">' : '';
+                                return header + items + divider;
+                            }).join('');
+                        }
+                        drop.classList.remove('hidden');
+                    })
+                    .catch(closeSearch);
+            }
+        }());
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

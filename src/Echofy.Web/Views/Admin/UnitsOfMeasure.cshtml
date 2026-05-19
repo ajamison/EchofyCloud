@@ -1,0 +1,61 @@
+@model List<Echofy.Web.Models.Admin.UnitOfMeasureViewModel>
+@{
+    ViewData["Title"] = "Units of Measure";
+    ViewData["ActivePage"] = "AdminUnitsOfMeasure";
+    Layout = "_Layout";
+}
+
+<div class="pb-5">
+    <div class="row g-4 g-xl-6">
+        <div class="col-12">
+            <div class="mb-4 d-flex align-items-center justify-content-between">
+                <h2 class="mb-0">Units of Measure</h2>
+                <a asp-action="CreateUnitOfMeasure" class="btn btn-primary btn-sm">
+                    <span class="fas fa-plus me-1"></span>Add Unit
+                </a>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm fs-9 mb-0 datatable"
+                               data-column-defs='[{"orderable":false,"targets":-1}]'>
+                            <thead>
+                                <tr>
+                                    <th class="align-middle">Name</th>
+                                    <th class="align-middle">Abbreviation</th>
+                                    <th class="align-middle text-center">Status</th>
+                                    <th class="align-middle"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var u in Model)
+                                {
+                                    <tr>
+                                        <td class="align-middle fw-semibold">@u.Name</td>
+                                        <td class="align-middle">
+                                            <span class="badge badge-phoenix badge-phoenix-primary">@u.Abbreviation</span>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @if (u.IsActive)
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-secondary">Inactive</span>
+                                            }
+                                        </td>
+                                        <td class="align-middle text-end">
+                                            <a asp-action="EditUnitOfMeasure" asp-route-id="@u.Id"
+                                               class="btn btn-phoenix-secondary btn-sm">Edit</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,71 @@
+@model IList<Echofy.Domain.Entities.Review>
+@{
+    ViewData["Title"] = "Reviews";
+    ViewData["ActivePage"] = "AdminReviews";
+    Layout = "_Layout";
+}
+
+<div class="row g-3 mb-4 align-items-center">
+    <div class="col-auto"><h2 class="mb-0">Reviews</h2></div>
+    <div class="col-auto ms-auto text-body-tertiary fs-9">@Model.Count total</div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        @if (!Model.Any())
+        {
+            <p class="text-body-tertiary text-center py-4 mb-0">No reviews yet.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm fs-9 mb-0 datatable"
+                       data-column-defs='[{"orderable":false,"targets":-1}]'>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Reviewer</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="/p/@r.Product.ShortId" target="_blank" class="fw-semibold">@r.Product.Name</a>
+                                </td>
+                                <td>@r.UserName</td>
+                                <td data-order="@r.Rating">
+                                    <span class="text-warning">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <span class="fas fa-star@(i <= r.Rating ? "" : "-o")" style="font-size:0.7rem;"></span>
+                                        }
+                                    </span>
+                                    <span class="ms-1 fw-semibold">@r.Rating</span>
+                                </td>
+                                <td class="text-truncate" style="max-width:260px;">
+                                    @(string.IsNullOrEmpty(r.Comment) ? "—" : r.Comment)
+                                </td>
+                                <td data-order="@r.CreatedAt.Ticks">@r.CreatedAt.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    <form asp-action="DeleteReview" asp-route-id="@r.Id" method="post"
+                                          onsubmit="return confirm('Delete this review?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-phoenix-danger btn-sm">
+                                            <span class="fas fa-trash-alt"></span>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

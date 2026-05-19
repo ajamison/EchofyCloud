@@ -1,0 +1,114 @@
+@model Echofy.Application.DTOs.DiscountOfferDto
+@{
+    var isEdit = Model.Id != 0;
+    var formTitle = ViewData["FormTitle"]?.ToString() ?? (isEdit ? "Edit Discount Offer" : "Add Discount Offer");
+    var productId = (int)ViewData["ProductId"]!;
+    var productName = ViewData["ProductName"]?.ToString();
+    ViewData["Title"] = formTitle;
+    ViewData["ActivePage"] = "Products";
+    Layout = "_Layout";
+}
+
+<div class="row g-3 mb-4 align-items-center">
+    <div class="col-auto">
+        <a asp-action="Edit" asp-route-id="@productId" class="btn btn-phoenix-secondary btn-sm">
+            <span class="fas fa-arrow-left me-2"></span>Back to @productName
+        </a>
+    </div>
+    <div class="col-auto"><h2 class="mb-0">@formTitle</h2></div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-7">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="@(isEdit ? "EditOffer" : "CreateOffer")"
+                      asp-route-productId="@productId"
+                      asp-route-offerId="@(isEdit ? Model.Id : 0)"
+                      method="post">
+
+                    <input type="hidden" asp-for="ProductId" />
+                    @if (isEdit)
+                    {
+                        <input type="hidden" asp-for="Id" />
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Name">Offer Name <span class="text-danger">*</span></label>
+                        <input class="form-control" asp-for="Name" placeholder="e.g. Summer Sale, Flash Deal" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Description">Description</label>
+                        <input class="form-control" asp-for="Description" placeholder="Optional notes about this offer" />
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="DiscountType">Discount Type <span class="text-danger">*</span></label>
+                            <select class="form-select" asp-for="DiscountType" asp-items="ViewBag.DiscountTypes"
+                                    id="discountTypeSelect"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="DiscountValue">
+                                Discount Value <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text" id="discountSymbol">%</span>
+                                <input class="form-control" asp-for="DiscountValue" type="number"
+                                       step="0.01" min="0" placeholder="e.g. 15" />
+                            </div>
+                            <span asp-validation-for="DiscountValue" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="StartDate">Start Date <span class="text-danger">*</span></label>
+                            <input class="form-control" asp-for="StartDate" type="date"
+                                   value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="StartDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="EndDate">End Date <span class="text-danger">*</span></label>
+                            <input class="form-control" asp-for="EndDate" type="date"
+                                   value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="EndDate" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" asp-for="IsActive" type="checkbox" role="switch" />
+                            <label class="form-check-label fw-semibold" asp-for="IsActive">Active</label>
+                        </div>
+                        <div class="form-text">Inactive offers will not be applied even within the date range.</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" type="submit">
+                            <span class="fas fa-save me-2"></span>@(isEdit ? "Save Changes" : "Create Offer")
+                        </button>
+                        <a asp-action="Edit" asp-route-id="@productId" class="btn btn-phoenix-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Update the input-group symbol when discount type changes
+    const select = document.getElementById('discountTypeSelect');
+    const symbol = document.getElementById('discountSymbol');
+
+    function updateSymbol() {
+        symbol.textContent = select.value === 'Percentage' ? '%' : '$';
+    }
+
+    select.addEventListener('change', updateSymbol);
+    updateSymbol();
+</script>
+}

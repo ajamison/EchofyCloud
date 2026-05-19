@@ -1,0 +1,63 @@
+# Build output
+bin/
+obj/
+dist/
+out/
+
+# Node
+node_modules/
+.npm/
+
+# .NET local secrets & overrides — copy appsettings.json and fill in your values
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.local.json
+secrets.json
+
+# VS / Rider IDE
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Vite / Webpack cache
+.vite/
+.cache/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Phoenix theme vendor demo files (contain third-party API tokens)
+src/Echofy.Web/wwwroot/assets/js/dashboards/travel-agency-dashboard.js
+src/Echofy.Web/wwwroot/assets/js/dashboards/travel-agency-dashboard.js.map
+src/Echofy.Web/wwwroot/assets/js/pages/trip.js
+src/Echofy.Web/wwwroot/assets/js/pages/trip.js.map
+src/Echofy.Web/wwwroot/assets/js/phoenix.js.map
+
+# EF Core migrations snapshot (keep Migrations folder but ignore snapshots if desired)
+# Uncomment the next line if you don't want to track the model snapshot:
+# *ModelSnapshot.cs
+
+# Android / MAUI build artefacts
+*.apk
+*.aab
+*.keystore
+platforms/
+
+# Publish profiles
+PublishProfiles/

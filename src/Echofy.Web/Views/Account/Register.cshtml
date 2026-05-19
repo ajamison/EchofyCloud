@@ -1,0 +1,72 @@
+@model Echofy.Web.Models.RegisterViewModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Sign Up";
+}
+
+<div class="flex h-screen">
+    @* Left panel — decorative (hidden on mobile) *@
+    <div class="hidden lg:block lg:w-1/2 relative bg-slate-900">
+        <div class="auth-bg-holder" style="background-image:url(~/assets/img/bg/32.png);"></div>
+        <div class="absolute inset-0 bg-slate-900/60"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center p-12 text-white">
+            <img src="~/assets/img/icons/logo.svg" alt="echofy" class="w-16 h-16 mb-6">
+            <h1 class="text-4xl font-bold mb-3">echofy</h1>
+            <p class="text-slate-300 text-lg text-center max-w-sm">Your all-in-one business management platform</p>
+        </div>
+    </div>
+
+    @* Right panel — form *@
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div class="w-full max-w-sm">
+            <a asp-controller="Dashboard" asp-action="Index" class="flex items-center justify-center mb-8 lg:hidden">
+                <img src="~/assets/img/icons/logo.svg" alt="echofy" class="w-12 h-12">
+            </a>
+
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">Sign Up</h2>
+                <p class="text-gray-500 mt-1">Create your account today</p>
+            </div>
+
+            <form asp-action="Register" method="post" class="space-y-4">
+                <div>
+                    <label class="form-label" asp-for="FullName">Full Name</label>
+                    <input class="form-control" asp-for="FullName" placeholder="Full Name" />
+                    <span asp-validation-for="FullName" class="text-danger text-xs mt-1"></span>
+                </div>
+
+                <div>
+                    <label class="form-label" asp-for="Email">Email address</label>
+                    <input class="form-control" asp-for="Email" placeholder="name@example.com" />
+                    <span asp-validation-for="Email" class="text-danger text-xs mt-1"></span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="form-label" asp-for="Password">Password</label>
+                        <input class="form-control" asp-for="Password" placeholder="Password" />
+                        <span asp-validation-for="Password" class="text-danger text-xs mt-1"></span>
+                    </div>
+                    <div>
+                        <label class="form-label" asp-for="ConfirmPassword">Confirm</label>
+                        <input class="form-control" asp-for="ConfirmPassword" placeholder="Confirm" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger text-xs mt-1"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label" asp-for="ReferralCode">Referral Code <span class="text-body-tertiary">(optional)</span></label>
+                    <input class="form-control" asp-for="ReferralCode" placeholder="e.g. ABC12345" />
+                    <span asp-validation-for="ReferralCode" class="text-danger text-xs mt-1"></span>
+                    <div class="form-text">Have a referral code? Enter it here to reward the person who invited you.</div>
+                </div>
+
+                <button class="btn btn-primary w-full" type="submit">Sign Up</button>
+
+                <p class="text-center text-sm">
+                    <a class="text-indigo-600 font-semibold hover:text-indigo-700" asp-action="Login">Sign in to an existing account</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>

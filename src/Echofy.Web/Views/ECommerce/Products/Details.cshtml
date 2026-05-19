@@ -1,0 +1,403 @@
+@model Echofy.Application.DTOs.ProductDto
+@using Echofy.Domain.Enums
+@{
+    ViewData["Title"] = Model.Name;
+    ViewData["ActivePage"] = "Products";
+    Layout = "_Layout";
+}
+
+<div class="row g-3 mb-4 align-items-center">
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-phoenix-secondary btn-sm">
+            <span class="fas fa-arrow-left me-2"></span>Back to Products
+        </a>
+    </div>
+    <div class="col-auto"><h2 class="mb-0">@Model.Name</h2></div>
+    @if (Model.IsActive)
+    {
+        <div class="col-auto"><span class="badge badge-phoenix badge-phoenix-success">Active</span></div>
+    }
+    else
+    {
+        <div class="col-auto"><span class="badge badge-phoenix badge-phoenix-secondary">Inactive</span></div>
+    }
+    <div class="col-auto ms-auto d-flex gap-2">
+        @{
+            bool isFav = ViewBag.IsFavorited is bool b && b;
+        }
+        <button id="btnFavorite"
+                data-url="/p/@Model.ShortId/favorite"
+                class="btn @(isFav ? "btn-danger" : "btn-phoenix-danger") btn-sm"
+                title="@(isFav ? "Remove from favorites" : "Save to favorites")">
+            <span class="fas fa-heart me-1"></span>
+            <span id="btnFavoriteText">@(isFav ? "Saved" : "Save")</span>
+        </button>
+        @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                <span class="fas fa-edit me-2"></span>Edit Product
+            </a>
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+
+    @* ── Left: product details ── *@
+    <div class="col-lg-8">
+
+        @* Active offer banner *@
+        @if (Model.ActiveOffer is not null)
+        {
+            <div class="alert alert-success d-flex align-items-center gap-3 mb-4" role="alert">
+                <span class="fas fa-tag fa-lg"></span>
+                <div>
+                    <strong>@Model.ActiveOffer.Name</strong> is live —
+                    @if (Model.ActiveOffer.DiscountType == DiscountType.Percentage)
+                    {
+                        <span>@Model.ActiveOffer.DiscountValue.ToString("N0")% off</span>
+                    }
+                    else
+                    {
+                        <span>$@Model.ActiveOffer.DiscountValue.ToString("N2") off</span>
+                    }
+                    · Ends @Model.ActiveOffer.EndDate.ToString("dd MMM yyyy")
+                </div>
+            </div>
+        }
+
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="mb-0">Product Details</h5></div>
+            <div class="card-body">
+                <p class="text-body-tertiary mb-4">@(string.IsNullOrEmpty(Model.Description) ? "No description provided." : Model.Description)</p>
+                <div class="row g-3">
+                    <div class="col-sm-4">
+                        <div class="text-body-tertiary fs-10 mb-1">Category</div>
+                        <div class="fw-semibold">@(Model.CategoryNames.Count > 0 ? string.Join(", ", Model.CategoryNames) : "—")</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="text-body-tertiary fs-10 mb-1">Company</div>
+                        <div class="fw-semibold">@(Model.CompanyName ?? "—")</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="text-body-tertiary fs-10 mb-1">Created</div>
+                        <div class="fw-semibold">@Model.CreatedAt.ToString("dd MMM yyyy")</div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Size) || !string.IsNullOrEmpty(Model.UnitOfMeasureAbbreviation))
+                    {
+                        <div class="col-sm-4">
+                            <div class="text-body-tertiary fs-10 mb-1">Size</div>
+                            <div class="fw-semibold">@($"{Model.Size} {Model.UnitOfMeasureAbbreviation}".Trim())</div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ManufacturerName))
+                    {
+                        <div class="col-sm-4">
+                            <div class="text-body-tertiary fs-10 mb-1">Manufacturer</div>
+                            <div class="fw-semibold">
+                                @if (!string.IsNullOrEmpty(Model.ManufacturerWebsite))
+                                {
+                                    <a href="@Model.ManufacturerWebsite" target="_blank" rel="noopener noreferrer">@Model.ManufacturerName <span class="fas fa-external-link-alt fs-10 ms-1"></span></a>
+                                }
+                                else
+                                {
+                                    @Model.ManufacturerName
+                                }
+                            </div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Sku))
+                    {
+                        <div class="col-sm-4">
+                            <div class="text-body-tertiary fs-10 mb-1">SKU</div>
+                            <div class="fw-semibold"><code class="fs-9">@Model.Sku</code></div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ManufacturerUpc))
+                    {
+                        <div class="col-sm-4">
+                            <div class="text-body-tertiary fs-10 mb-1">Manufacturer UPC</div>
+                            <div class="fw-semibold"><code class="fs-9">@Model.ManufacturerUpc</code></div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* Price History *@
+        @if (Model.PriceHistory.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">Price History</h5>
+                    <span class="badge badge-phoenix badge-phoenix-primary fs-10">@Model.PriceHistory.Count entries</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm fs-9 mb-0 datatable" data-paging="false">
+                            <thead>
+                                <tr>
+                                    <th>Price</th>
+                                    <th>Effective From</th>
+                                    <th>Effective To</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var h in Model.PriceHistory)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">$@h.Price.ToString("N2")</td>
+                                        <td class="text-body-tertiary">@h.EffectiveFrom.ToString("dd MMM yyyy HH:mm")</td>
+                                        <td class="text-body-tertiary">
+                                            @(h.EffectiveTo.HasValue ? h.EffectiveTo.Value.ToString("dd MMM yyyy HH:mm") : "—")
+                                        </td>
+                                        <td>
+                                            @if (h.IsCurrent)
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-success fs-10">Current</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Superseded</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* Discount Offers *@
+        @if (Model.DiscountOffers.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Discount Offers</h5></div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm fs-9 mb-0 datatable" data-paging="false">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Discount</th>
+                                    <th>Period</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var offer in Model.DiscountOffers)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold">@offer.Name</div>
+                                            @if (!string.IsNullOrEmpty(offer.Description))
+                                            {
+                                                <div class="text-body-tertiary fs-10">@offer.Description</div>
+                                            }
+                                        </td>
+                                        <td class="fw-semibold">
+                                            @if (offer.DiscountType == DiscountType.Percentage)
+                                            {
+                                                <span class="text-success">@offer.DiscountValue.ToString("N0")% off</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-success">$@offer.DiscountValue.ToString("N2") off</span>
+                                            }
+                                        </td>
+                                        <td class="text-body-tertiary fs-10">
+                                            @offer.StartDate.ToString("dd MMM yyyy") → @offer.EndDate.ToString("dd MMM yyyy")
+                                        </td>
+                                        <td>
+                                            @if (!offer.IsActive)
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Inactive</span>
+                                            }
+                                            else if (offer.IsCurrentlyRunning)
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-success fs-10">Live</span>
+                                            }
+                                            else if (offer.StartDate > DateTime.UtcNow)
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-info fs-10">Scheduled</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-secondary fs-10">Expired</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @* ── Images ─────────────────────────────────────────────────────────── *@
+    @if (Model.Images.Any())
+    {
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Images</h5></div>
+                <div class="card-body">
+                    @{
+                        var mainImg = Model.Images.FirstOrDefault(i => i.IsMain) ?? Model.Images[0];
+                    }
+                    <img id="detailMainImage"
+                         src="@mainImg.Url" alt="@(mainImg.AltText ?? Model.Name)"
+                         class="img-fluid rounded mb-3 w-100"
+                         style="max-height: 340px; object-fit: cover;" />
+                    @if (Model.Images.Count > 1)
+                    {
+                        <div class="d-flex gap-2 flex-wrap">
+                            @foreach (var img in Model.Images)
+                            {
+                                <img src="@img.Url" alt="@(img.AltText ?? Model.Name)"
+                                     class="rounded border @(img.IsMain ? "border-primary" : "") cursor-pointer"
+                                     style="width: 64px; height: 64px; object-fit: cover;"
+                                     onclick="document.getElementById('detailMainImage').src = this.src" />
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @* ── Right: pricing summary ── *@
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="mb-0">Pricing</h5></div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-baseline mb-2">
+                    <span class="text-body-tertiary">Base Price</span>
+                    <span class="fw-semibold fs-6">$@Model.Price.ToString("N2")</span>
+                </div>
+                @if (Model.ActiveOffer is not null)
+                {
+                    <div class="d-flex justify-content-between align-items-baseline mb-2">
+                        <span class="text-body-tertiary">Active Offer</span>
+                        @if (Model.ActiveOffer.DiscountType == DiscountType.Percentage)
+                        {
+                            <span class="text-success">−@Model.ActiveOffer.DiscountValue.ToString("N0")%</span>
+                        }
+                        else
+                        {
+                            <span class="text-success">−$@Model.ActiveOffer.DiscountValue.ToString("N2")</span>
+                        }
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between align-items-baseline">
+                        <span class="fw-semibold">Effective Price</span>
+                        <span class="fw-bold fs-5 text-success">$@Model.EffectivePrice.ToString("N2")</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="mb-0">Stock</h5></div>
+            <div class="card-body text-center">
+                @{
+                    var stockClass = Model.StockQuantity == 0 ? "danger" : Model.StockQuantity <= 5 ? "warning" : "success";
+                }
+                <div class="display-6 fw-bold text-@stockClass">@Model.StockQuantity</div>
+                <div class="text-body-tertiary fs-9">
+                    @if (Model.StockQuantity == 0) { <span>Out of Stock</span> }
+                    else if (Model.StockQuantity <= 5) { <span>Low Stock</span> }
+                    else { <span>In Stock</span> }
+                </div>
+            </div>
+        </div>
+
+        @* QR Code *@
+        @if (!string.IsNullOrEmpty(Model.ShortId))
+        {
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">QR Code</h5></div>
+                <div class="card-body text-center">
+                    <img src="@Url.Action("QrCode", "Products", new { id = Model.Id })"
+                         alt="QR Code" class="img-fluid" style="max-width: 160px;" />
+                    <div class="mt-2">
+                        <a href="/p/@Model.ShortId" target="_blank"
+                           class="btn btn-phoenix-secondary btn-sm">
+                            <span class="fas fa-external-link-alt me-1"></span>Public Page
+                        </a>
+                    </div>
+                    <div class="text-body-tertiary fs-10 mt-1">
+                        <code>/p/@Model.ShortId</code>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* Additional QR Codes *@
+        @if (Model.AdditionalShortIds.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">Additional QR Codes</h5>
+                    <span class="badge badge-phoenix badge-phoenix-primary fs-10">@Model.AdditionalShortIds.Count</span>
+                </div>
+                <div class="card-body">
+                    @foreach (var sid in Model.AdditionalShortIds)
+                    {
+                        <div class="border rounded p-2 mb-2 text-center">
+                            @if (!string.IsNullOrEmpty(sid.Label))
+                            {
+                                <div class="fw-semibold fs-9 mb-1">@sid.Label</div>
+                            }
+                            <img src="@Url.Action("QrCode", "Products", new { id = Model.Id, code = sid.Code })"
+                                 alt="QR @sid.Code" class="img-fluid mb-1" style="max-width:100px;" />
+                            <div>
+                                <code class="fs-10 text-body-tertiary">@sid.Code</code>
+                            </div>
+                            <div class="mt-1">
+                                <a href="@Url.Action("QrCode", "Products", new { id = Model.Id, code = sid.Code })"
+                                   download="@(sid.Code)-qr.svg"
+                                   class="btn btn-phoenix-secondary btn-sm py-0 px-2 fs-10">
+                                    <span class="fas fa-download me-1"></span>SVG
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    var btn = document.getElementById('btnFavorite');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        fetch(btn.dataset.url, { method: 'POST' })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var text = document.getElementById('btnFavoriteText');
+                if (data.favorited) {
+                    btn.classList.remove('btn-phoenix-danger');
+                    btn.classList.add('btn-danger');
+                    text.textContent = 'Saved';
+                    btn.title = 'Remove from favorites';
+                    btn.setAttribute('data-fav', 'true');
+                } else {
+                    btn.classList.remove('btn-danger');
+                    btn.classList.add('btn-phoenix-danger');
+                    text.textContent = 'Save';
+                    btn.title = 'Save to favorites';
+                    btn.setAttribute('data-fav', 'false');
+                }
+            });
+    });
+}());
+</script>
+}

@@ -1,0 +1,69 @@
+@model Echofy.Application.DTOs.CustomerDto
+@{
+    ViewData["Title"] = Model.FullName;
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-phoenix-secondary btn-sm"><span class="fas fa-arrow-left me-2"></span>Back</a>
+    </div>
+    <div class="col-auto ms-auto">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">Edit Customer</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <div class="avatar avatar-5xl mb-3">
+                    <img class="rounded-circle" src="@(Model.AvatarUrl ?? "~/assets/img/team/40x40/avatar.webp")" alt="@Model.FullName" />
+                </div>
+                <h4 class="mb-1">@Model.FullName</h4>
+                <p class="text-body-tertiary mb-3">Joined @Model.JoinedDate.ToString("MMMM d, yyyy")</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Contact Info</h5></div>
+            <div class="card-body">
+                <p class="mb-1"><span class="fas fa-envelope me-2 text-body-tertiary"></span>@Model.Email</p>
+                <p class="mb-1"><span class="fas fa-phone me-2 text-body-tertiary"></span>@Model.Phone</p>
+                @if (!string.IsNullOrEmpty(Model.Street))
+                {
+                    <p class="mb-0"><span class="fas fa-map-marker-alt me-2 text-body-tertiary"></span>
+                        @Model.Street, @Model.City, @Model.Province @Model.Country</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+        @if (Model.Reviews.Any())
+        {
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Reviews (@Model.Reviews.Count)</h5></div>
+                <div class="card-body">
+                    @foreach (var r in Model.Reviews)
+                    {
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <span class="fas fa-star @(i <= r.Rating ? "text-warning" : "text-body-quaternary") fs-10"></span>
+                                    }
+                                </div>
+                                <small class="text-body-tertiary">@r.CreatedAt.ToString("MMM d, yyyy")</small>
+                            </div>
+                            @if (!string.IsNullOrEmpty(r.Comment))
+                            {
+                                <p class="mb-0 mt-1 fs-9">@r.Comment</p>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

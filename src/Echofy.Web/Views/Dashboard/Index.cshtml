@@ -1,0 +1,83 @@
+@model Echofy.Application.DTOs.DashboardStatsDto
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="pb-5">
+    <div class="row g-4">
+        <div class="col-12 col-xxl-6">
+            <div class="mb-8">
+                <h2 class="mb-2">Ecommerce Dashboard</h2>
+                <h5 class="text-body-tertiary fw-semibold">Here's what's going on at your business right now</h5>
+            </div>
+            <div class="row align-items-center g-4">
+                <div class="col-12 col-md-auto">
+                    <div class="d-flex align-items-center">
+                        <span class="fa-stack" style="min-height:46px;min-width:46px;">
+                            <span class="fa-solid fa-square fa-stack-2x dark__text-opacity-50 text-danger-light" data-fa-transform="down-4 rotate--10 left-4"></span>
+                            <span class="fa-solid fa-circle fa-stack-2x stack-circle text-stats-circle-danger" data-fa-transform="up-4 right-3 grow-2"></span>
+                            <span class="fa-stack-1x fa-solid fa-xmark text-danger" data-fa-transform="shrink-2 up-8 right-6"></span>
+                        </span>
+                        <div class="ms-3">
+                            <h4 class="mb-0">@Model.OutOfStockProducts products</h4>
+                            <p class="text-body-secondary fs-9 mb-0">Out of stock</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xxl-6">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h5 class="mb-1">New customers</h5>
+                                    <h6 class="text-body-tertiary">Last 7 days</h6>
+                                </div>
+                                <h4>@Model.NewCustomers</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="mb-2">Top coupons</h5>
+                            <div class="mt-2">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="bullet-item bg-primary me-2"></div>
+                                    <h6 class="text-body fw-semibold flex-1 mb-0">Percentage discount</h6>
+                                    <h6 class="text-body fw-semibold mb-0">@Model.PercentageDiscountShare%</h6>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="bullet-item bg-primary-lighter me-2"></div>
+                                    <h6 class="text-body fw-semibold flex-1 mb-0">Fixed cart discount</h6>
+                                    <h6 class="text-body fw-semibold mb-0">@Model.FixedCartDiscountShare%</h6>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="bullet-item bg-info-dark me-2"></div>
+                                    <h6 class="text-body fw-semibold flex-1 mb-0">Fixed product discount</h6>
+                                    <h6 class="text-body fw-semibold mb-0">@Model.FixedProductDiscountShare%</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="mb-2">Quick Links</h5>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2"><a asp-controller="Customers" asp-action="Index" class="btn btn-phoenix-primary btn-sm w-100">View Customers</a></li>
+                                <li><a asp-controller="Products" asp-action="Index" class="btn btn-phoenix-secondary btn-sm w-100">View Products</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

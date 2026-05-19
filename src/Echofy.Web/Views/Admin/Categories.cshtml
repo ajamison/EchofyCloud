@@ -1,0 +1,65 @@
+@model List<Echofy.Web.Models.Admin.CategoryViewModel>
+@{
+    ViewData["Title"] = "Categories";
+    ViewData["ActivePage"] = "AdminCategories";
+    Layout = "_Layout";
+}
+
+<div class="pb-5">
+    <div class="row g-4 g-xl-6">
+        <div class="col-12">
+            <div class="mb-4 d-flex align-items-center justify-content-between">
+                <h2 class="mb-0">Categories</h2>
+                <a asp-action="CreateCategory" class="btn btn-primary btn-sm">
+                    <span class="fas fa-plus me-1"></span>Add Category
+                </a>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm fs-9 mb-0 datatable"
+                               data-column-defs='[{"orderable":false,"targets":-1}]'>
+                            <thead>
+                                <tr>
+                                    <th class="align-middle">Name</th>
+                                    <th class="align-middle">Slug</th>
+                                    <th class="align-middle">Description</th>
+                                    <th class="align-middle text-center">Products</th>
+                                    <th class="align-middle text-center">Status</th>
+                                    <th class="align-middle"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var cat in Model)
+                                {
+                                    <tr>
+                                        <td class="align-middle fw-semibold">@cat.Name</td>
+                                        <td class="align-middle text-body-tertiary">@cat.Slug</td>
+                                        <td class="align-middle">@(cat.Description ?? "—")</td>
+                                        <td class="align-middle text-center">
+                                            <span class="badge badge-phoenix badge-phoenix-primary">@cat.ProductCount</span>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @if (cat.IsActive)
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-phoenix badge-phoenix-secondary">Inactive</span>
+                                            }
+                                        </td>
+                                        <td class="align-middle text-end">
+                                            <a asp-action="EditCategory" asp-route-id="@cat.Id"
+                                               class="btn btn-phoenix-secondary btn-sm">Edit</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

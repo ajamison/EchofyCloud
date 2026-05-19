@@ -1,0 +1,60 @@
+@model IReadOnlyList<Echofy.Application.DTOs.LeadDto>
+@{
+    ViewData["Title"] = "Leads";
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-auto"><h2 class="mb-0">Leads</h2></div>
+    <div class="col-auto ms-auto">
+        <a asp-action="Create" class="btn btn-primary btn-sm"><span class="fas fa-plus me-2"></span>Add Lead</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm fs-9 mb-0 datatable"
+                   data-column-defs='[{"orderable":false,"targets":-1}]'>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Company</th>
+                        <th>Value</th>
+                        <th>Status</th>
+                        <th>Assigned</th>
+                        <th>Deals</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var l in Model)
+                    {
+                        <tr>
+                            <td><a asp-action="Details" asp-route-id="@l.Id" class="fw-semibold">@l.FullName</a></td>
+                            <td>@l.Email</td>
+                            <td>@l.Company</td>
+                            <td data-order="@l.EstimatedValue">$@l.EstimatedValue.ToString("N0")</td>
+                            <td>
+                                @{
+                                    var statusClass = l.Status.ToString() switch {
+                                        "New" => "info",
+                                        "Contacted" => "primary",
+                                        "Qualified" => "warning",
+                                        "Converted" => "success",
+                                        "Lost" => "danger",
+                                        _ => "secondary"
+                                    };
+                                }
+                                <span class="badge badge-phoenix badge-phoenix-@statusClass fs-10">@l.Status</span>
+                            </td>
+                            <td>@(l.AssignedTo ?? "-")</td>
+                            <td>@l.DealCount</td>
+                            <td><a asp-action="Details" asp-route-id="@l.Id" class="btn btn-phoenix-secondary btn-sm">View</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
