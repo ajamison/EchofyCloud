@@ -12,9 +12,8 @@ Internet
     ▼
 [nginx :443/80]  ← SSL termination, static file serving, reverse proxy
     ├── /           → React SPA (static files at /var/www/echofy/react)
-    ├── /api/       → Echofy.Api        (127.0.0.1:5000)
-    ├── /uploads/   → Echofy.Api        (127.0.0.1:5000)
-    └── admin.*     → Echofy.Web (MVC)  (127.0.0.1:5001)
+    ├── /api/       → Echofy.Api  (127.0.0.1:5000)
+    └── /uploads/   → Echofy.Api  (127.0.0.1:5000)
 
 Internal only (not exposed externally):
     Echofy.RecommendationApi            (127.0.0.1:5100)
@@ -28,7 +27,6 @@ Database:
 | Service | Internal Port | Description |
 |---------|--------------|-------------|
 | Echofy.Api | 5000 | REST API — consumed by the React SPA and mobile app |
-| Echofy.Web | 5001 | ASP.NET Core MVC app (legacy / admin portal) |
 | Echofy.RecommendationApi | 5100 | Product recommendation microservice (internal) |
 | React SPA | — | Built static files served by nginx |
 
@@ -52,7 +50,6 @@ Before deploying, create these DNS A records pointing to your Linode's IP addres
 ```
 yourdomain.com       A   <linode-ip>
 www.yourdomain.com   A   <linode-ip>
-admin.yourdomain.com A   <linode-ip>
 ```
 
 Allow up to 15 minutes for DNS propagation before running the SSL step.
@@ -87,7 +84,6 @@ nano /root/deploy.sh
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `DOMAIN` | Your primary domain | `echofy.io` |
-| `ADMIN_DOMAIN` | Subdomain for the MVC app | `admin.echofy.io` |
 | `EMAIL` | Let's Encrypt contact | `admin@echofy.io` |
 | `REPO_URL` | GitHub repository URL | (already set) |
 | `DB_PASSWORD` | PostgreSQL password | strong random string |
@@ -112,10 +108,10 @@ The script will:
 4. Clone the repository
 5. Write production `appsettings.Production.json` files
 6. Build the React SPA
-7. Publish all .NET applications
+7. Publish Echofy.Api and Echofy.RecommendationApi
 8. Apply database migrations
 9. Create and enable `systemd` services
-10. Configure nginx virtual hosts
+10. Configure nginx
 11. Obtain Let's Encrypt SSL certificates
 12. Start all services and run a health check
 
@@ -123,13 +119,11 @@ A successful run ends with:
 ```
 === Health Check ===
 [INFO]  Echofy.Api is responding on port 5000
-[INFO]  Echofy.Web is responding on port 5001
 [INFO]  Echofy.RecommendationApi is responding on port 5100
 [INFO]  nginx is running.
 
 Deployment complete!
-  App:   https://yourdomain.com
-  Admin: https://admin.yourdomain.com
+  App: https://yourdomain.com
 ```
 
 ---
@@ -151,15 +145,12 @@ This skips OS package installation, database creation, and SSL certificate steps
 ```
 /var/www/echofy/
 ├── api/        — Published Echofy.Api binaries
-├── web/        — Published Echofy.Web binaries
 ├── rec/        — Published Echofy.RecommendationApi binaries
 ├── react/      — Built React SPA static files (served by nginx)
 ├── uploads/    — User-uploaded product images (persisted across deploys)
 └── logs/
     ├── api.log
     ├── api-error.log
-    ├── web.log
-    ├── web-error.log
     ├── rec.log
     └── rec-error.log
 
@@ -167,11 +158,9 @@ This skips OS package installation, database creation, and SSL certificate steps
 
 /etc/nginx/sites-available/
     echofy-app      — nginx config for React SPA + API proxy
-    echofy-admin    — nginx config for MVC admin subdomain
 
 /etc/systemd/system/
     echofy-api.service
-    echofy-web.service
     echofy-rec.service
 ```
 
@@ -183,7 +172,6 @@ This skips OS package installation, database creation, and SSL certificate steps
 
 ```bash
 systemctl status echofy-api
-systemctl status echofy-web
 systemctl status echofy-rec
 ```
 
@@ -192,7 +180,7 @@ systemctl status echofy-rec
 ```bash
 # Live tail
 journalctl -u echofy-api -f
-journalctl -u echofy-web -f
+journalctl -u echofy-rec -f
 
 # File logs
 tail -f /var/www/echofy/logs/api-error.log
@@ -202,7 +190,6 @@ tail -f /var/www/echofy/logs/api-error.log
 
 ```bash
 systemctl restart echofy-api
-systemctl restart echofy-web
 systemctl restart echofy-rec
 ```
 
@@ -293,13 +280,6 @@ Production config is stored in `appsettings.Production.json` files placed alongs
 | `Jwt:Issuer` | Token issuer (`echofy-api`) |
 | `Jwt:Audience` | Token audience (`echofy-mobile`) |
 | `App:FrontendBaseUrl` | React SPA URL (for CORS and email links) |
-
-### Echofy.Web — `/var/www/echofy/web/appsettings.Production.json`
-
-| Key | Description |
-|-----|-------------|
-| `ConnectionStrings:DefaultConnection` | PostgreSQL connection string |
-| `RecommendationApi:BaseUrl` | Internal URL of the recommendation service |
 
 ### Echofy.RecommendationApi — `/var/www/echofy/rec/appsettings.Production.json`
 

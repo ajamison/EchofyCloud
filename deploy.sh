@@ -9,7 +9,6 @@ set -euo pipefail
 # CONFIGURATION — edit these before running
 # =============================================================================
 DOMAIN="yourdomain.com"                          # e.g. echofy.io
-ADMIN_DOMAIN="admin.${DOMAIN}"                   # MVC app subdomain
 EMAIL="admin@yourdomain.com"                     # Let's Encrypt contact email
 
 REPO_URL="https://github.com/ajamison/EchofyCloud.git"
@@ -29,7 +28,6 @@ APP_DIR="/var/www/echofy"
 
 # Internal ports (not exposed externally — nginx proxies to these)
 PORT_API=5000
-PORT_WEB=5001
 PORT_REC=5100
 
 # =============================================================================
@@ -103,7 +101,7 @@ setup_user_and_dirs() {
     info "User $APP_USER already exists."
   fi
 
-  mkdir -p "$APP_DIR"/{api,web,rec,react,uploads,logs}
+  mkdir -p "$APP_DIR"/{api,rec,react,uploads,logs}
   chown -R "$APP_USER":"$APP_USER" "$APP_DIR"
   info "App directories ready at $APP_DIR"
 }
@@ -179,19 +177,6 @@ write_appsettings() {
 }
 EOF
 
-  # ── Echofy.Web ───────────────────────────────────────────────────────────────
-  cat > "$SRC_DIR/src/Echofy.Web/appsettings.Production.json" <<EOF
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=$DB_NAME;Username=$DB_USER;Password=$DB_PASSWORD"
-  },
-  "RecommendationApi": {
-    "BaseUrl": "http://localhost:$PORT_REC"
-  },
-  "AllowedHosts": "*"
-}
-EOF
-
   # ── Echofy.RecommendationApi ─────────────────────────────────────────────────
   cat > "$SRC_DIR/src/Echofy.RecommendationApi/appsettings.Production.json" <<EOF
 {
@@ -258,12 +243,6 @@ publish_dotnet() {
   chown -R "$APP_USER":"$APP_USER" "$APP_DIR/api"
   info "Echofy.Api published."
 
-  # Echofy.Web (MVC)
-  dotnet publish "$SRC_DIR/src/Echofy.Web/Echofy.Web.csproj" \
-    $publish_flags -o "$APP_DIR/web"
-  chown -R "$APP_USER":"$APP_USER" "$APP_DIR/web"
-  info "Echofy.Web published."
-
   # Echofy.RecommendationApi
   dotnet publish "$SRC_DIR/src/Echofy.RecommendationApi/Echofy.RecommendationApi.csproj" \
     $publish_flags -o "$APP_DIR/rec"
@@ -326,31 +305,6 @@ StandardError=append:$APP_DIR/logs/api-error.log
 WantedBy=multi-user.target
 EOF
 
-  # ── Echofy.Web (MVC) ─────────────────────────────────────────────────────────
-  cat > /etc/systemd/system/echofy-web.service <<EOF
-[Unit]
-Description=Echofy MVC Web App
-After=network.target postgresql.service
-Requires=postgresql.service
-
-[Service]
-Type=simple
-User=$APP_USER
-WorkingDirectory=$APP_DIR/web
-ExecStart=/usr/bin/dotnet $APP_DIR/web/Echofy.Web.dll
-Restart=always
-RestartSec=10
-SyslogIdentifier=echofy-web
-Environment=ASPNETCORE_ENVIRONMENT=Production
-Environment=DOTNET_ENVIRONMENT=Production
-Environment=ASPNETCORE_URLS=http://127.0.0.1:$PORT_WEB
-StandardOutput=append:$APP_DIR/logs/web.log
-StandardError=append:$APP_DIR/logs/web-error.log
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
   # ── Echofy.RecommendationApi ─────────────────────────────────────────────────
   cat > /etc/systemd/system/echofy-rec.service <<EOF
 [Unit]
@@ -377,7 +331,7 @@ WantedBy=multi-user.target
 EOF
 
   systemctl daemon-reload
-  systemctl enable echofy-api echofy-web echofy-rec
+  systemctl enable echofy-api echofy-rec
   info "systemd services installed and enabled."
 }
 
@@ -434,32 +388,8 @@ server {
 }
 EOF
 
-  # ── MVC Web App (admin subdomain) ────────────────────────────────────────────
-  cat > /etc/nginx/sites-available/echofy-admin <<EOF
-server {
-    listen 80;
-    server_name $ADMIN_DOMAIN;
-
-    location / {
-        proxy_pass         http://127.0.0.1:$PORT_WEB;
-        proxy_http_version 1.1;
-        proxy_set_header   Upgrade \$http_upgrade;
-        proxy_set_header   Connection keep-alive;
-        proxy_set_header   Host \$host;
-        proxy_set_header   X-Real-IP \$remote_addr;
-        proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
-        proxy_read_timeout 90s;
-    }
-
-    client_max_body_size 20M;
-}
-EOF
-
-  # Enable sites
-  ln -sf /etc/nginx/sites-available/echofy-app   /etc/nginx/sites-enabled/echofy-app
-  ln -sf /etc/nginx/sites-available/echofy-admin /etc/nginx/sites-enabled/echofy-admin
+  # Enable site
+  ln -sf /etc/nginx/sites-available/echofy-app /etc/nginx/sites-enabled/echofy-app
   rm -f /etc/nginx/sites-enabled/default
 
   nginx -t
@@ -474,7 +404,7 @@ setup_ssl() {
   section "Obtaining SSL Certificates"
 
   certbot --nginx \
-    -d "$DOMAIN" -d "www.$DOMAIN" -d "$ADMIN_DOMAIN" \
+    -d "$DOMAIN" -d "www.$DOMAIN" \
     --non-interactive --agree-tos --email "$EMAIL" \
     --redirect
 
@@ -490,7 +420,7 @@ setup_ssl() {
 restart_services() {
   section "Starting Services"
 
-  systemctl restart echofy-api echofy-web echofy-rec
+  systemctl restart echofy-api echofy-rec
   systemctl reload nginx
 
   info "All services restarted."
@@ -518,8 +448,7 @@ health_check() {
     fi
   }
 
-  check_service "Echofy.Api"              $PORT_API
-  check_service "Echofy.Web"              $PORT_WEB
+  check_service "Echofy.Api"               $PORT_API
   check_service "Echofy.RecommendationApi" $PORT_REC
 
   if systemctl is-active --quiet nginx; then
@@ -531,8 +460,7 @@ health_check() {
 
   if $ok; then
     echo -e "\n${GREEN}${BOLD}Deployment complete!${RESET}"
-    echo -e "  App:   https://$DOMAIN"
-    echo -e "  Admin: https://$ADMIN_DOMAIN"
+    echo -e "  App: https://$DOMAIN"
   else
     echo -e "\n${YELLOW}Deployment finished with warnings. Check logs in $APP_DIR/logs/${RESET}"
   fi
